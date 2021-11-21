@@ -2,10 +2,10 @@ import time
 import os
 import werkzeug
 from flask_restful import Resource, reqparse
+from flask_sse import sse
 from models.photo import PhotoModel
 from utility.filemanager import FileManager
 from PIL import Image
-from utility.messageannouncer import MAInstance
 
 
 class Photo(Resource):
@@ -113,6 +113,6 @@ class NewPhoto(Resource):
     image.save(FileManager.path_to_upload_folder(photo.id))
 
     # Notify other clients
-    MAInstance.message_announcer.announce(data='new_image')
+    sse.publish('new_image')
 
     return FileManager.photo_to_client(photo.json()), 201

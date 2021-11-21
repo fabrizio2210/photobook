@@ -80,9 +80,15 @@ services:
       traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
     environment:
       DB_PATH: /static_files/data.db
+      REDIS_URL: redis://redis
     volumes:
       - static_files:/static_files
     networks: 
+      - backends
+
+  redis:
+    image: redis
+    networks:
       - backends
 
 volumes:

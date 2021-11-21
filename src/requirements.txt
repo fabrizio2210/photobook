@@ -13,4 +13,5 @@ Werkzeug==0.16.0
 testinfra==3.2.1
 uWSGI==2.0.18
 Pillow
+flask-sse
 

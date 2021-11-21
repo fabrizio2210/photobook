@@ -52,3 +52,18 @@
     - name: Servizio Nginx attivo
       service: name=nginx state=started enabled=yes
 
+    ###############
+    #Installazione redis
+
+    - name: install Redis
+      apt:
+        name: "{{ node_packages }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      vars:
+        node_packages:
+        - redis
+
+    - name: Servizio Redis attivo
+      service: name=redis state=started enabled=yes

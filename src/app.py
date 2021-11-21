@@ -1,6 +1,7 @@
 from flask import Flask, Response
 from flask_restful import Api
 from flask_cors import CORS
+from flask_sse import sse
 import logging
 import os
 
@@ -9,7 +10,6 @@ from resources.photo import Photo, NewPhoto, PhotoList
 from utility.networking import get_my_ip
 from utility.data import bootstrap
 from utility.filemanager import FileManager
-from utility.messageannouncer import MAInstance
 
 
 # Initialise from envrironment variables
@@ -19,24 +19,12 @@ FileManager.set_upload_folder(os.getenv('STATIC_FILES_PATH', '/tmp'))
 # Initialise data
 bootstrap(force=False)
 
-# Initiate Pub/Sub
-announcer = MAInstance.message_announcer
-
 # Initiate Flask
 app = Flask(__name__)
 app.config['PROPAGATE_EXCEPTIONS'] = True
+app.config['REDIS_URL'] = os.getenv('REDIS_URL','redis://localhost')
+app.register_blueprint(sse, url_prefix='/api/events')
 api = Api(app)
-
-# Server-Sent Events
-@app.route('/api/events', methods=['GET'])
-def listen():
-  def stream():
-    messages = announcer.listen()  # returns a queue.Queue
-    while True:
-      msg = messages.get()  # blocks until a new message arrives
-      yield msg
-  return Response(stream(), mimetype='text/event-stream')
-
 
 # API
 api.add_resource(Photo,     '/api/photo/<int:id>')
