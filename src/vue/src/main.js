@@ -2,7 +2,10 @@ import Vue from "vue";
 import router from "./router";
 import store from "./store/index.js";
 import App from "./App.vue";
+import VueSSE from "vue-sse";
 import './assets/style.css';
+
+Vue.use(VueSSE);
 
 Vue.config.productionTip = false;
 

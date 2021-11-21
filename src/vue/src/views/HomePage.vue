@@ -15,6 +15,7 @@
 </template>
 
 <script>
+
 export default {
     data () {
         return { }
@@ -30,6 +31,9 @@ export default {
             return this.$store.state.photos.last_timestamp;
         }
     },
+    sse: {
+      cleanup: true,
+    },
     methods: {
        populatePhotos(last_timestamp) {
          if (typeof last_timestamp !== 'undefined') {
@@ -37,10 +41,24 @@ export default {
          } else {
            this.$store.dispatch('photos/getAll');
          }
-       }
+       },
+       handleEvents(msg) {
+         switch(msg) {
+           case 'new_image':
+             this.populatePhotos(this.$store.state.photos.last_timestamp);
+             break;
+           default:
+             console.err('Event not known:', msg);
+         }
+       },
     },
     mounted () {
       this.populatePhotos(this.$store.state.photos.last_timestamp);
+      this.$sse.create('/api/events')
+        .on('message', (msg) => this.handleEvents(msg))
+        .on('error', (err) => console.error('Failed to parse or lost connection:', err))
+        .connect()
+        .catch((err) => console.error('Failed make initial connection:', err));
     }
 };
 </script>

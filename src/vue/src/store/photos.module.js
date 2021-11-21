@@ -73,8 +73,9 @@ export const photos = {
       console.log(photos);
       // Vue.Set???
       state.all.photos_list = photos.slice().reverse().concat(state.all.photos_list);
-      state.last_timestamp = state.all.photos_list[0].timestamp;
-      //Vue.set(state, 'last_timestamp', photos_list[0].timestamp);
+      if (state.all.photos_list.length > 0){
+        state.last_timestamp = state.all.photos_list[0].timestamp;
+      }
       Vue.delete(state.all, 'loading');
     },
     getAllFailure(state, error) {
