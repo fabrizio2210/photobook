@@ -5,7 +5,8 @@ import router from '../router/';
 export const photos = {
   namespaced: true,
   state: {
-    all: { photos_dict : {}, photos_list : [] },
+    all: { photos_list : [] },
+    last_timestamp: 0,
     status : {}
   },
   actions: {
@@ -33,12 +34,12 @@ export const photos = {
         error => commit("getAllFailure", error)
       );
     },
-    get({ commit }, { photo_id}) {
-      commit("getRequest");
+    getSince({ commit }, { last_timestamp }) {
+      commit("getSinceRequest");
 
-      photoService.get(photo_id).then(
-        photo => commit("getSuccess", photo["photo"]),
-        error => commit("getFailure", error)
+      photoService.getSince(last_timestamp).then(
+        photos => commit("getSinceSuccess", photos["photos"]),
+        error => commit("getSinceFailure", error)
       );
     }
   },
@@ -48,7 +49,7 @@ export const photos = {
     },
     creatingSuccess(state, photo) {
       state.status = { created: true };
-      state.all.photos_dict[photo.id] = photo;
+      state.all.photos_list.push(photo);
     },
     creatingFailure(state) {
       state.status = {};
@@ -60,19 +61,26 @@ export const photos = {
     getRequest(state) {
       state.all.loading = true ;
     },
+    getSinceRequest(state) {
+      state.all.loading = true ;
+    },
     getAllSuccess(state, photos) {
-      //const photos_dict = {}
-      //photos.forEach((element) => photos_dict[element.id] = element);
-      //state.all = { photos_dict };
       const photos_list = photos.slice().reverse();
+      Vue.set(state, 'last_timestamp', photos_list[0].timestamp);
       state.all = { photos_list };
     },
-    getSuccess(state, photo) {
-      console.log(photo);
-      Vue.set(state.all.photos_dict, photo.id, photo);
+    getSinceSuccess(state, photos) {
+      console.log(photos);
+      // Vue.Set???
+      state.all.photos_list = photos.slice().reverse().concat(state.all.photos_list);
+      state.last_timestamp = state.all.photos_list[0].timestamp;
+      //Vue.set(state, 'last_timestamp', photos_list[0].timestamp);
       Vue.delete(state.all, 'loading');
     },
     getAllFailure(state, error) {
+      state.all = { error };
+    },
+    getSinceFailure(state, error) {
       state.all = { error };
     },
     getFailure(state, error) {

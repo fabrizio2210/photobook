@@ -17,10 +17,7 @@
 <script>
 export default {
     data () {
-        return {
-            photoname: '',
-            submitted: false
-        }
+        return { }
     },
     computed: {
         user () {
@@ -28,11 +25,22 @@ export default {
         },
         photos () {
             return this.$store.state.photos.all;
+        },
+        last_timestamp () {
+            return this.$store.state.photos.last_timestamp;
         }
     },
-    methods: {},
-    created () {
-        this.$store.dispatch('photos/getAll');
+    methods: {
+       populatePhotos(last_timestamp) {
+         if (typeof last_timestamp !== 'undefined') {
+           this.$store.dispatch('photos/getSince', {last_timestamp});
+         } else {
+           this.$store.dispatch('photos/getAll');
+         }
+       }
+    },
+    mounted () {
+      this.populatePhotos(this.$store.state.photos.last_timestamp);
     }
 };
 </script>

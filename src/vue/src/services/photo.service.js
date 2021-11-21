@@ -6,6 +6,7 @@ config.apiUrl = "";
 export const photoService = {
   create,
   get,
+  getSince,
   getAll
 };
 
@@ -27,6 +28,17 @@ function get(photo_id) {
   };
 
   return fetch(`${config.apiUrl}/api/photo/${photo_id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getSince(timestamp) {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader()
+  };
+
+  return fetch(`${config.apiUrl}/api/photos?timestamp=${timestamp}`, requestOptions).then(
     handleResponse
   );
 }
