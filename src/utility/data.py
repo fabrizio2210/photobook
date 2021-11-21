@@ -8,6 +8,7 @@ def bootstrap(force=False, dev=False, quiet=False):
     # verify and skip if it is not necessary
     if db.present():
       return
-  FileManager.delete_all_photos()
+  if db.present():
+    FileManager.delete_all_photos()
   db.delete_all()
   PhotoModel.create_table()

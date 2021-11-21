@@ -8,11 +8,16 @@ from db import db
 from resources.photo import Photo, NewPhoto, PhotoList
 from utility.networking import get_my_ip
 from utility.data import bootstrap
+from utility.filemanager import FileManager
 from utility.messageannouncer import MAInstance
 
 
 # Initialise from envrironment variables
 db.set_db_filename(os.getenv('DB_PATH', '/tmp/data.db'))
+FileManager.set_upload_folder(os.getenv('STATIC_FILES_PATH', '/tmp'))
+
+# Initialise data
+bootstrap(force=False)
 
 # Initiate Pub/Sub
 announcer = MAInstance.message_announcer

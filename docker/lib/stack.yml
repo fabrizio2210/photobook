@@ -45,7 +45,7 @@ services:
         condition: on-failure
 
   vue:
-    image: fabrizio2210/light_cicd-frontend
+    image: fabrizio2210/photobook-frontend
     labels: 
         traefik.port: 80
         traefik.enable: "true"
@@ -55,18 +55,38 @@ services:
     networks: 
       - backends
 
+  nginx:
+    image: nginx
+    labels: 
+        traefik.port: 80
+        traefik.enable: "true"
+        traefik.frontendstatic.rule: "PathPrefix(`/static`)"
+        traefik.http.services.frontendstatic-service.loadbalancer.server.port: 80
+        traefik.http.routers.frontendstatic.rule: "PathPrefix(`/static`)"
+        traefik.http.routers.frontendstatic.middlewares: static-stripprefix
+        traefik.http.middlewares.static-stripprefix.stripprefix.prefixes: /static
+    volumes:
+      - static_files:/usr/share/nginx/html/
+    networks: 
+      - backends
+
   flask:
-    image: fabrizio2210/light_cicd-backend
+    image: fabrizio2210/photobook-backend
     labels: 
       traefik.port: 80
       traefik.enable: "true"
       traefik.frontend.rule: 'PathPrefix(`/api`)'
       traefik.http.services.backend-service.loadbalancer.server.port: 80
       traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
+    environment:
+      DB_PATH: /static_files/data.db
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - static_files:/static_files
     networks: 
       - backends
+
+volumes:
+  static_files:
 
 networks:
   backends:

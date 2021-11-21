@@ -8,6 +8,10 @@ class FileManager():
   static_path_url = '/static/'
 
   @classmethod
+  def set_upload_folder(cls, path):
+    cls.upload_folder = path.rstrip('/') + '/'
+
+  @classmethod
   def allowed_file(cls, filename):
       return '.' in filename and \
              filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

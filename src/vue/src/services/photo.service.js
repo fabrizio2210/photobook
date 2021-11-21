@@ -1,7 +1,7 @@
 //import config from 'config';
 import { authHeader } from "../helpers";
 var config = {};
-config.apiUrl = "";
+config.apiUrl = window.location.origin;
 
 export const photoService = {
   create,
@@ -33,12 +33,16 @@ function get(photo_id) {
 }
 
 function getSince(timestamp) {
+  var url = new URL(`/api/photos`, config.apiUrl);
+  const params = { 
+      timestamp: timestamp
+  };
   const requestOptions = {
     method: "GET",
-    headers: authHeader()
+    headers: authHeader(),
   };
-
-  return fetch(`${config.apiUrl}/api/photos?timestamp=${timestamp}`, requestOptions).then(
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, requestOptions).then(
     handleResponse
   );
 }
