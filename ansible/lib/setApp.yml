@@ -37,30 +37,18 @@
         - npm
 
     ###############
-    #Installazione Docker
-    - name: Inserisci chiave gpg per Docker
-      apt_key:
-        id: 0EBFCD88
-        url: https://download.docker.com/linux/debian/gpg
+    #Installazione ngnix
+
+    - name: install Nginx
+      apt:
+        name: "{{ node_packages }}"
         state: present
-    - name :
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
-        state: present
-    
-    - name: installa pacchetti
-      apt: name={{item}} state=present update_cache=yes
-      with_items:
-        - software-properties-common
-        - curl
-        - ca-certificates
-        - apt-transport-https
-    
-#    - name: utente vagrant
-#      user:
-#        name: vagrant
-#        groups: docker
-#    
-#    - name: Servizio Docker attivo
-#      service: name=docker state=started enabled=yes
+        update_cache: yes
+        cache_valid_time: 3600
+      vars:
+        node_packages:
+        - nginx
+
+    - name: Servizio Nginx attivo
+      service: name=nginx state=started enabled=yes
 
