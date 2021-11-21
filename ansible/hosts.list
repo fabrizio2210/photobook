@@ -1,0 +1,2 @@
+[webserver]
+infrarosso ansible_host=infrarosso.oss ansible_user=root

@@ -1,0 +1,6 @@
+[webserver:children]
+vagrant
+
+[vagrant:vars]
+ansible_python_interpreter=/usr/bin/python3
+

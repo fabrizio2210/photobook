@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI web infrared
+
+[Service]
+ExecStart={{ app_folder }}/venv/bin/uwsgi --master --emperor {{ etc_folder }}/uwsgi.ini --die-on-term --uid www-data --gid www-data --logto {{ log_folder }}/emperor.log
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+NotifyAccess=all
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,14 @@
+[uwsgi]
+base = {{ app_folder }}
+app = app
+module = %(app)
+home = %(base)/venv
+pythonpath = %(base)
+socket = {{ socket_folder }}/socket.sock
+chmod-socket = 777
+processes = 8
+threads = 8
+harakiri = 15
+callable = app
+logto = {{ log_folder }}/%n.log
+

@@ -1,0 +1,66 @@
+---
+- hosts: webserver
+  become: true
+  tasks:
+    - name: install web packages
+      apt:
+        name: "{{ web_packages }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      vars:
+        web_packages:
+        - python3.9
+        - python3-venv
+        - python3-pip
+        - python3-setuptools
+        - python3-virtualenv
+        - python3-setuptools
+        - python-setuptools
+        - libpcre3
+        - libpcre3-dev
+    - name: install web packages 2
+      pip:
+        requirements: /opt/photobook/requirements.txt
+        virtualenv: /opt/photobook/venv
+        virtualenv_command: /usr/bin/python3.9 -m venv
+
+    - name: install Vue.js packages
+      apt:
+        name: "{{ node_packages }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      vars:
+        node_packages:
+        - nodejs
+        - npm
+
+    ###############
+    #Installazione Docker
+    - name: Inserisci chiave gpg per Docker
+      apt_key:
+        id: 0EBFCD88
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+    - name :
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+        state: present
+    
+    - name: installa pacchetti
+      apt: name={{item}} state=present update_cache=yes
+      with_items:
+        - software-properties-common
+        - curl
+        - ca-certificates
+        - apt-transport-https
+    
+#    - name: utente vagrant
+#      user:
+#        name: vagrant
+#        groups: docker
+#    
+#    - name: Servizio Docker attivo
+#      service: name=docker state=started enabled=yes
+
