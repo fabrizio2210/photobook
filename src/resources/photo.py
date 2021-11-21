@@ -43,9 +43,25 @@ class Photo(Resource):
     return photo.json()
 
 class PhotoList(Resource):
-
-    def get(self):
-      return {'photos': list(map(lambda x: FileManager.photo_to_client(x.json()), PhotoModel.get_all_photos()))}
+  parser = reqparse.RequestParser()
+  parser.add_argument('timestamp',
+                      type=int,
+                      required=False,
+                      help="If timestamp is provided, get latest photos after timestamp."
+                      )
+  def get(self):
+    data = PhotoList.parser.parse_args()
+    if data.get('timestamp', None):
+      return {'photos': list(map(lambda x: 
+                             FileManager.photo_to_client(x.json()),
+                             PhotoModel.find_by_timestamp(data['timestamp'])
+                         ))
+             }
+    return {'photos': list(map(lambda x: 
+                           FileManager.photo_to_client(x.json()),
+                           PhotoModel.get_all_photos()
+                       ))
+           }
 
 
 class NewPhoto(Resource):
@@ -81,7 +97,7 @@ class NewPhoto(Resource):
                        description=data.get('description', ''),
                        author=data.get('author', ''),
                        author_id=data['author_id'],
-                       timestamp=int(time.time()))
+                       timestamp=int(time.time()*1000))
     try:
       photo.save_to_db()
     except Exception as e:
