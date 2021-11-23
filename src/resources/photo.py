@@ -5,7 +5,7 @@ from flask_restful import Resource, reqparse
 from flask_sse import sse
 from models.photo import PhotoModel
 from utility.filemanager import FileManager
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 class Photo(Resource):
@@ -107,6 +107,8 @@ class NewPhoto(Resource):
 
     # Image processing
     image = Image.open(image_file)
+    image = ImageOps.exif_transpose(image)
+
     image.thumbnail((900,600))
 
     # Save photo on filesystem
