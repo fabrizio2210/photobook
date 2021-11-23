@@ -14,11 +14,11 @@
       </ul>
     <div class="form-group">
 	<label for="description">Descrizione</label>
-	<input type="text" v-model="description" name="description" class="form-control" />
+	<input type="text" v-model="description" name="description" class="form-description" />
     </div>
     <div class="form-group">
 	<label htmlFor="author">Il tuo nome</label>
-	<input type="text" v-model="author" name="author" class="form-control" />
+	<input type="text" v-model="author" name="author" class="form-author" />
     </div>
     <UploadImage 
         class="btn btn-primary"
@@ -30,8 +30,7 @@
         :size="1024 * 1024 * 10"
         ref="upload"
         v-model="files" >
-       <i class="fa fa-plus"></i>
-       Select an image
+       <a class="btn" href="#">Select an image</a>
     </UploadImage>
   <button v-show="!$refs.upload || !$refs.upload.active" @click.prevent="$refs.upload.active = true" type="button">Start upload</button>
   <button v-show="$refs.upload && $refs.upload.active" @click.prevent="$refs.upload.active = false" type="button">Stop upload</button>
