@@ -1,9 +1,8 @@
 FROM balenalib/armv7hf-debian
 MAINTAINER fabrizio2210
-ENV DOCKERVERSION=20.10.2
-ENV DOCKERARCH=armhf
 
 ENV APP_FOLDER="/opt/web"
+ENV STATIC_FILES_PATH="/static_files"
 ENV ETC_FOLDER="/etc/uwsgi"
 ENV SOCKET_FOLDER="${ETC_FOLDER}/socket"
 
@@ -14,7 +13,7 @@ RUN apt-get update && apt-get install -y nginx \
     curl \
     supervisor \
     gcc \
-    python3.7 \
+    python3.9 \
     python3-dev \
     python3-pip \
     python3-setuptools \
@@ -22,17 +21,15 @@ RUN apt-get update && apt-get install -y nginx \
     python-setuptools \
     libpcre3 \
     libpcre3-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     && apt-get clean
 
-RUN curl -fsSLO https://download.docker.com/linux/static/stable/${DOCKERARCH}/docker-${DOCKERVERSION}.tgz \
-    && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
-    && rm docker-${DOCKERVERSION}.tgz
-
-RUN groupadd -g 996 docker -r && usermod -a -G docker www-data
 
 COPY src/ ${APP_FOLDER}/
 RUN mkdir ${ETC_FOLDER} && chmod 755 ${ETC_FOLDER} && chown www-data ${ETC_FOLDER}
 RUN mkdir ${SOCKET_FOLDER} && chmod 755 ${SOCKET_FOLDER} && chown www-data ${SOCKET_FOLDER}
+RUN mkdir ${STATIC_FILES_PATH} && chmod 755 ${STATIC_FILES_PATH} && chown www-data ${STATIC_FILES_PATH}
 
 RUN pip3 install wheel
 RUN pip3 install -r ${APP_FOLDER}/requirements.txt
@@ -44,6 +41,8 @@ RUN sed -i "s|{{ socket_folder }}|$SOCKET_FOLDER|g" ${ETC_FOLDER}/uwsgi.ini
 
 # NGINX
 EXPOSE 80
+RUN ln -fs /dev/stdout /var/log/nginx/access.log
+RUN ln -fs /dev/stdout /var/log/nginx/error.log
 
 COPY docker/lib/web-site.conf /etc/nginx/sites-available/web.conf
 RUN sed -i "s|{{ socket_folder }}|$SOCKET_FOLDER|g" /etc/nginx/sites-available/web.conf
