@@ -7,7 +7,7 @@
             <div class="photo-element" v-for="photo in photos.photos_list" :key="photo.id">
                 <img class="photo-img-element" loading=lazy :src=photo.location />
                 <div class="photo-description">{{photo.description}}</div>
-                <div class="photo-author">{{photo.author}}</div>
+                <div v-show="photo.author" class="photo-author">-- {{photo.author}} --</div>
             </div>
         </div>
     </div>
@@ -53,11 +53,15 @@ export default {
     },
     mounted () {
       this.populatePhotos(this.$store.state.photos.last_timestamp);
+      this.vueInsomnia().on();
       this.$sse.create('/api/events')
         .on('message', (msg) => this.handleEvents(msg))
         .on('error', (err) => console.error('Failed to parse or lost connection:', err))
         .connect()
         .catch((err) => console.error('Failed make initial connection:', err));
+    },
+    destroyed () {
+      this.vueInsomnia().off();
     }
 };
 </script>

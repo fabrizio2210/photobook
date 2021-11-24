@@ -5,7 +5,7 @@
       <UploadImage 
           class="btn-primary"
           post-action="/api/new_photo"
-          :data="{author_id: '1234', description: description, author: author}"
+          :data="{author_id: '1234', description: this.$sanitize(description), author: this.$sanitize(author)}"
           extensions="gif,jpg,jpeg,png,webp"
           accept="image/png,image/gif,image/jpeg,image/webp"
           :multiple="false"
