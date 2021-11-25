@@ -29,6 +29,10 @@ label {
   width: 50%;
 }
 
+.transfer-status {
+  font-size: 1.3em;
+}
+
 #app {
   background-color: black;
   color: #e6e6e6;

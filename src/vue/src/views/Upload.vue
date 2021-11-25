@@ -1,6 +1,6 @@
 <template>
   <div class="upload">
-    <h1>Carica qui la tua foto</h1>
+    <h2>Carica qui la tua foto</h2>
     <div class="buttons-upload">
       <UploadImage 
           class="btn-primary"
@@ -16,11 +16,11 @@
          <div v-for="file in files" :key="file.id">
            <div><img class="image-thumb" v-if="file.thumb" :src="file.thumb" /></div>
            <div>{{formatSize(file.size)}}</div>
-           <div v-if="file.error">{{file.error}}</div>
-           <div v-else-if="file.success">fatto, clicca sull'immagine per cambiare</div>
-           <div v-else-if="file.active">trasferimento</div>
-           <div v-else-if="!!file.error">{{file.error}}</div>
-           <div v-else>clicca sull'immagine per cambiare</div>
+           <div class="transfer-status" v-if="file.error">{{file.error}}</div>
+           <div class="transfer-status" v-else-if="file.success">fatto, clicca sull'immagine per cambiare</div>
+           <div class="transfer-status" v-else-if="file.active">trasferimento  <img src="../assets/loading.gif"/></div>
+           <div class="transfer-status" v-else-if="!!file.error">{{file.error}}</div>
+           <div class="transfer-status" v-else>clicca sull'immagine per cambiare</div>
          </div>
       </UploadImage>
     </div>
