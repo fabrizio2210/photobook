@@ -70,7 +70,6 @@ export const photos = {
       state.all = { photos_list };
     },
     getSinceSuccess(state, photos) {
-      console.log(photos);
       // Vue.Set???
       state.all.photos_list = photos.slice().reverse().concat(state.all.photos_list);
       if (state.all.photos_list.length > 0){

@@ -5,7 +5,6 @@
       <UploadImage 
           class="btn-primary"
           post-action="/api/new_photo"
-          :data="{author_id: '1234', description: this.$sanitize(description), author: this.$sanitize(author)}"
           extensions="gif,jpg,jpeg,png,webp"
           accept="image/png,image/gif,image/jpeg,image/webp"
           :multiple="false"
@@ -27,16 +26,18 @@
     </div>
     <div class="text-input-group">
       <div class="form-group">
-          <label for="description">Descrizione:</label>
-          <textarea cols="40" rows="5" v-model="description" name="description" class="form-description"/>
+          <label>Descrizione:
+              <textarea cols="40" rows="5" v-model="description" class="form-description"/>
+          </label>
       </div>
       <div class="form-group">
-          <label for="author">Il tuo nome:</label>
-          <input type="text" v-model="author" name="author" class="form-author" />
+          <label>Il tuo nome:
+              <input type="text" v-model="author" class="form-author" />
+          </label>
       </div>
       </div>
     <div>
-      <button v-show="(!$refs.upload || !$refs.upload.active) && files.length" @click.prevent="$refs.upload.active = true" class="btn" type="btn">Carica</button>
+      <button v-show="(!$refs.upload || !$refs.upload.active) && files.length" @click.prevent="uploadFile($refs)" class="btn" type="btn">Carica</button>
       <button v-show="$refs.upload && $refs.upload.active" @click.prevent="$refs.upload.active = false" class="btn-stop" type="btn">Ferma</button>
     </div>
   </div>
@@ -60,8 +61,16 @@ export default {
     }
   },
   methods: {
+    uploadFile (refs) {
+      var vm = this;
+      vm.files[0].data = {
+        'author': this.$sanitize(vm.author),
+        'description': this.$sanitize(vm.description),
+        'author_id': '12345'
+      };
+      refs.upload.active = true;
+    },
     inputFilter(newFile, oldFile) {
-    
       if (newFile && newFile.error === "" && newFile.file && (!oldFile || newFile.file !== oldFile.file)) {
         // Create a blob field
         newFile.blob = ''
