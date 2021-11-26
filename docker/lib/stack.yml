@@ -72,6 +72,8 @@ services:
 
   flask:
     image: fabrizio2210/photobook-backend
+    deploy:
+      replicas: 2
     labels: 
       traefik.port: 80
       traefik.enable: "true"
