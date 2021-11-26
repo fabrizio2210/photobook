@@ -106,4 +106,10 @@ label {
   .btn-stop {
     padding: 10px 30px;
   }
+  .photo-img-element {
+    width: 60%;
+  }
+  .image-thumb {
+    width: 30%;
+  }
 }
