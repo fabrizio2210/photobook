@@ -27,6 +27,9 @@ class Photo(Resource):
                       )
 
   def delete(self, id):
+    if os.getenv('BLOCK_UPLOAD', False):
+      return { 'message':
+        os.getenv('BLOCK_UPLOAD_MSG', 'The upload is blocked by admin.')}, 403
     photo = PhotoModel.find_by_id(id)
     if photo:
       photo.delete_from_db()
@@ -34,6 +37,9 @@ class Photo(Resource):
     return {'message': 'Item not found.'}, 404
 
   def put(self, id):
+    if os.getenv('BLOCK_UPLOAD', False):
+      return { 'message':
+        os.getenv('BLOCK_UPLOAD_MSG', 'The upload is blocked by admin.')}, 403
     data = Photo.parser.parse_args()
     photo = PhotoModel.find_by_id(id)
     if photo:
@@ -88,6 +94,9 @@ class NewPhoto(Resource):
                       )
 
   def post(self):
+    if os.getenv('BLOCK_UPLOAD', False):
+      return { 'message':
+        os.getenv('BLOCK_UPLOAD_MSG', 'The upload is blocked by admin.')}, 403
     data = NewPhoto.parser.parse_args()
     image_file = data['file']
     if not FileManager.allowed_file(image_file.filename):

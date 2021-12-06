@@ -13,6 +13,11 @@ The upload page is without access control, so everyone can upload photos.
 - The homepage is instantaneously updated when a new photo is uploaded;
 - Appearance optimized for mobile, but also for desktop is fine (somewhat responsive).
 
+## Environment Variables
+
+`BLOCK_UPLOAD`: if set with a whatever value, it blocks the upload of photos.
+`BLOCK_UPLOAD_MSG`: if `BLOCK_UPLOAD` is set, this is the custom message to show.
+
 ## Develop
 
 ### Requirements
