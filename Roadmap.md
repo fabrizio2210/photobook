@@ -7,6 +7,7 @@
 - Implement auto show photo on top (Server Sent Event)
 - Implement block mechanism
 - Implement /edit page
+- Simplify the development process (Avoid use Vagrant, but use just Docker)
 - Substitute sqlite with MongoDB and NFS
 
 # Requirements
