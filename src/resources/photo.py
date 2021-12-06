@@ -56,8 +56,19 @@ class PhotoList(Resource):
                       required=False,
                       help="If timestamp is provided, get latest photos after timestamp."
                       )
+  parser.add_argument('author_id',
+                      type=str,
+                      required=False,
+                      help="If author_id is provided, get all the photos of that author."
+                      )
   def get(self):
     data = PhotoList.parser.parse_args()
+    if data.get('author_id', None):
+      return {'photos': list(map(lambda x:
+                             FileManager.photo_to_client(x.json()),
+                             PhotoModel.get_photos_by_author_id(data['author_id'])
+                             ))
+             }
     if data.get('timestamp', None):
       return {'photos': list(map(lambda x: 
                              FileManager.photo_to_client(x.json()),
