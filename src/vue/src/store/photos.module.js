@@ -6,6 +6,7 @@ export const photos = {
   namespaced: true,
   state: {
     all: { photos_list : [] },
+    my: { photos_list: [] },
     last_timestamp: 0,
     status : {}
   },
@@ -41,6 +42,14 @@ export const photos = {
         photos => commit("getSinceSuccess", photos["photos"]),
         error => commit("getSinceFailure", error)
       );
+    },
+    getOwn({ commit }, { uid }) {
+      commit("getOwnRequest");
+
+      photoService.getOwn(uid).then(
+        photos => commit("getOwnSuccess", photos["photos"]),
+        error => commit("getOwnFailure", error)
+      );
     }
   },
   mutations: {
@@ -70,17 +79,27 @@ export const photos = {
       state.all = { photos_list };
     },
     getSinceSuccess(state, photos) {
-      // Vue.Set???
       state.all.photos_list = photos.slice().reverse().concat(state.all.photos_list);
       if (state.all.photos_list.length > 0){
         state.last_timestamp = state.all.photos_list[0].timestamp;
       }
       Vue.delete(state.all, 'loading');
     },
+    getOwnRequest(state) {
+      state.all.loading = true ;
+    },
+    getOwnSuccess(state, photos) {
+      const photos_list = photos.slice().reverse();
+      state.my = { photos_list };
+      Vue.delete(state.all, 'loading');
+    },
     getAllFailure(state, error) {
       state.all = { error };
     },
     getSinceFailure(state, error) {
+      state.all = { error };
+    },
+    getOwnFailure(state, error) {
       state.all = { error };
     },
     getFailure(state, error) {

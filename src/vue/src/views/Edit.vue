@@ -1,12 +1,15 @@
 <template>
     <div>
-        <h3 v-if="project" >{{ project.name }}</h3>
-        <div id="nav">
-            <router-link v-if="project" :to="'/projects/' + project.id">Executions</router-link> |
-            <router-link v-if="project" :to="'/projects/' + project.id + '/environments'">Environment</router-link> |
-            <router-link v-if="project" :to="'/projects/' + project.id + '/settings'">Settings</router-link>
+        <em v-if="photos.loading">Loading photos...</em>
+        <img v-show="photos.loading" src="../assets/loading.gif" />
+        <span v-if="photos.error" class="text-danger">ERROR: {{photos.error}}</span>
+        <div class="photo-list" v-if="photos.photos_list">
+            <div class="photo-element" v-for="photo in photos.photos_list" :key="photo.id">
+                <img class="photo-img-element" loading=lazy :src=photo.location />
+                <div class="photo-description">{{photo.description}}</div>
+                <div v-show="photo.author" class="photo-author">-- {{photo.author}} --</div>
+            </div>
         </div>
-    <router-view />
     </div>
 </template>
 
@@ -14,20 +17,35 @@
 
 export default {
     data () {
-        return {
-        }
+        return { }
     },
     computed: {
-        project () {
-            const project_id = this.$route.params.project_id;
-            return this.$store.state.projects.all.projects_dict[project_id];
-        }
+        photos () {
+            return this.$store.state.photos.my;
+        },
+        last_timestamp () {
+            return this.$store.state.photos.last_timestamp;
+        },
+        uid () {
+          if (this.$store.state.authentication.user) {
+            if (this.$store.state.authentication.user.uid) {
+              return this.$store.state.authentication.user.uid;
+            }
+          }
+          return "12345";
+        },
     },
-    created () {
-        const project_id = this.$route.params.project_id;
-        if (!this.project){
-            this.$store.dispatch('projects/get', { project_id });
-        }
+    methods: {
+       populatePhotos(uid) {
+         if (typeof uid !== 'undefined') {
+           this.$store.dispatch('photos/getOwn', {uid});
+         }
+       },
+    },
+    mounted () {
+      this.populatePhotos(this.uid);
+    },
+    destroyed () {
     }
 };
 </script>

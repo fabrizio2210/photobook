@@ -6,6 +6,7 @@ export const photoService = {
   create,
   get,
   getSince,
+  getOwn,
   getAll
 };
 
@@ -33,6 +34,20 @@ function getSince(timestamp) {
   var url = new URL(`/api/photos`, config.apiUrl);
   const params = { 
       timestamp: timestamp
+  };
+  const requestOptions = {
+    method: "GET"
+  };
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getOwn(uid) {
+  var url = new URL(`/api/photos`, config.apiUrl);
+  const params = { 
+      author_id: uid
   };
   const requestOptions = {
     method: "GET"
