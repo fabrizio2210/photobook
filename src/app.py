@@ -7,6 +7,7 @@ import os
 
 from db import db
 from resources.photo import Photo, NewPhoto, PhotoList
+from resources.uid import Uid
 from utility.networking import get_my_ip
 from utility.data import bootstrap
 from utility.filemanager import FileManager
@@ -30,6 +31,7 @@ api = Api(app)
 api.add_resource(Photo,     '/api/photo/<int:id>')
 api.add_resource(PhotoList,     '/api/photos')
 api.add_resource(NewPhoto,     '/api/new_photo')
+api.add_resource(Uid,     '/api/uid')
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
