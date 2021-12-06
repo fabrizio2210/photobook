@@ -4,7 +4,8 @@
 - Use sqlite as a backend DB
 - Use NFS as photo Storage
 - Implement resize of photo
-- Implement auto show photo on top (websocket)
+- Implement auto show photo on top (Server Sent Event)
+- Implement block mechanism
 - Implement /edit page
 - Substitute sqlite with MongoDB and NFS
 
