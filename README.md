@@ -47,3 +47,5 @@ The following steps will create a local stack in Docker. The script creates from
 user@host:~ cd photobook/
 user@host:~/photobook docker/lib/createLocalStack.sh
 ```
+Access it to http://localhost/
+
