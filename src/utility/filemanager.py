@@ -28,8 +28,12 @@ class FileManager():
   def delete_all_photos(cls):
     photos = PhotoModel.get_all_photos()
     for photo in photos:
-      if os.path.isfile(os.path.join(cls.upload_folder, cls.get_file_name(photo.id))):
-        os.unlink(os.path.join(cls.upload_folder, cls.get_file_name(photo.id)))
+      cls.delete_photo(photo.id)
+
+  @classmethod
+  def delete_photo(cls, id):
+    if os.path.isfile(os.path.join(cls.upload_folder, cls.get_file_name(id))):
+      os.unlink(os.path.join(cls.upload_folder, cls.get_file_name(id)))
 
   @classmethod
   def photo_to_client(cls, photo):

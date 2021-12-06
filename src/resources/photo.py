@@ -27,13 +27,17 @@ class Photo(Resource):
                       )
 
   def delete(self, id):
+    data = Photo.parser.parse_args()
     if os.getenv('BLOCK_UPLOAD', False):
       return { 'message':
         os.getenv('BLOCK_UPLOAD_MSG', 'The upload is blocked by admin.')}, 403
     photo = PhotoModel.find_by_id(id)
     if photo:
-      photo.delete_from_db()
-      return {'message': 'Item deleted.'}
+      if photo[0].author_id == data.get('author_id', None):
+        FileManager.delete_photo(photo[0].id)
+        photo[0].delete_from_db()
+        return {'message': 'Item deleted.'}, 201
+      return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
 
   def put(self, id):
@@ -43,11 +47,11 @@ class Photo(Resource):
     data = Photo.parser.parse_args()
     photo = PhotoModel.find_by_id(id)
     if photo:
-      photo.name = data['name']
+      photo[0].name = data['name']
     else:
-      photo = PhotoModel(None, **data)
-    photo.save_to_db()
-    return photo.json()
+      photo[0] = PhotoModel(None, **data)
+    photo[0].save_to_db()
+    return photo[0].json()
 
 class PhotoList(Resource):
   parser = reqparse.RequestParser()
