@@ -1,5 +1,8 @@
 # Photobook
 
+![upload page](https://github.com/[fabrizio2210]/[photobook]/blob/main/img/Screenshot_upload.png?raw=true)
+![home page](https://github.com/[fabrizio2210]/[photobook]/blob/main/img/Screenshot_homepage.png?raw=true)
+
 It's a simple Single Page Application that allows to upload photos and see them in the homepage.
 I created it to have a place to share images for a specific event/party.  
 The upload page is without access control, so everyone can upload photos.
