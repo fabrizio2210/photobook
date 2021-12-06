@@ -10,7 +10,7 @@ The upload page is without access control, so everyone can upload photos.
 ## Features
 
 - No login, I wanted to keep it simple as possible;
-- The homepage is instantaneously updated when a new photo is uploaded.
+- The homepage is instantaneously updated when a new photo is uploaded;
 - Appearance optimized for mobile, but also for desktop is fine (somewhat responsive).
 
 ## Develop
@@ -18,7 +18,7 @@ The upload page is without access control, so everyone can upload photos.
 ### Requirements
 
 To develop the webservice, you need:
-- Vagrant with NFS support (to share the foldersrc/)
+- Vagrant with NFS support (to share the folder src/)
 - libvirt
 
 You can follow these guides for Vagrant/libvirt:  
