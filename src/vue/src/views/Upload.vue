@@ -60,6 +60,18 @@ export default {
       files: [],
     }
   },
+
+  computed: {
+    stored_author () {
+      if (this.$store.state.authentication.user) {
+        if (this.$store.state.authentication.user.name) {
+          return this.$store.state.authentication.user.name;
+        }
+      }
+      return "";
+    },
+  },
+
   methods: {
     uploadFile (refs) {
       var vm = this;
@@ -97,6 +109,13 @@ export default {
        }
        return size.toString() + ' B'
     }
+  },
+  mounted () {
+    this.author = this.stored_author;
+  },
+  destroyed () {
+    const author = this.author;
+    this.$store.dispatch('authentication/set_name', author);
   }
 };
 </script>

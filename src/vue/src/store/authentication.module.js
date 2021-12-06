@@ -1,63 +1,42 @@
-import { userService } from "../services";
-import router from "../router";
+import { uidService } from "../services";
 import Vue from "vue";
 
 const user = JSON.parse(localStorage.getItem("user"));
 const initialState = user
-  ? { status: { loggedIn: true }, user }
+  ? { status: {}, user }
   : { status: {}, user: null };
 
 export const authentication = {
   namespaced: true,
   state: initialState,
   actions: {
-    login({ dispatch, commit }, { username, password }) {
-      commit("loginRequest", username );
-
-      userService.login(username, password).then(
-        user => {
-          commit("loginSuccess", user);
-          router.push("/");
-        },
-        error => {
-          commit("loginFailure", error);
-          dispatch("alert/error", error, { root: true });
+    get_uid({ commit }) {
+      uidService.getUid().then(
+        uid => {
+          commit("get_uid", uid['uid']);
         }
       );
     },
-    token_refresh({ commit }, refresh_token) {
-      userService.refresh(refresh_token).then(
-        access_token => {
-          commit("refresh", access_token['access_token']);
-        }
-      );
-    },
-    logout({ commit }) {
-      userService.logout();
-      commit("logout");
+    set_name({ commit }, author) {
+      commit("set_name", author);
     }
   },
   mutations: {
-    loginRequest(state, username) {
-      state.status = { loggingIn: true };
-      state.user = null;
-      //TODO username should be get by the token
-      state.username = username;
+    get_uid(state, uid) {
+      if (!state.user) {
+        state.user = {'uid': uid};
+      } else {
+        Vue.set(state.user, 'uid', uid);
+      }
+      localStorage.setItem("user", JSON.stringify(state.user));
     },
-    loginSuccess(state, user) {
-      state.status = { loggedIn: true };
-      state.user = user;
-    },
-    loginFailure(state) {
-      state.status = {};
-      state.user = null;
-    },
-    refresh(state, access_token) {
-      Vue.set(state.user, 'access_token', access_token);
-    },
-    logout(state) {
-      state.status = {};
-      state.user = null;
+    set_name(state, author) {
+      if (!state.user) {
+        state.user = {'name': author};
+      } else {
+        Vue.set(state.user, 'name', author);
+      } 
+      localStorage.setItem("user", JSON.stringify(state.user));
     }
   }
 };

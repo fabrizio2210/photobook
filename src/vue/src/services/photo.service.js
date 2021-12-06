@@ -1,5 +1,4 @@
 //import config from 'config';
-import { authHeader } from "../helpers";
 var config = {};
 config.apiUrl = window.location.origin;
 
@@ -12,8 +11,7 @@ export const photoService = {
 
 function getAll() {
   const requestOptions = {
-    method: "GET",
-    headers: authHeader()
+    method: "GET"
   };
 
   return fetch(`${config.apiUrl}/api/photos`, requestOptions).then(
@@ -23,8 +21,7 @@ function getAll() {
 
 function get(photo_id) {
   const requestOptions = {
-    method: "GET",
-    headers: authHeader()
+    method: "GET"
   };
 
   return fetch(`${config.apiUrl}/api/photo/${photo_id}`, requestOptions).then(
@@ -38,8 +35,7 @@ function getSince(timestamp) {
       timestamp: timestamp
   };
   const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
+    method: "GET"
   };
   url.search = new URLSearchParams(params).toString();
   return fetch(url, requestOptions).then(
@@ -50,7 +46,6 @@ function getSince(timestamp) {
 function create(photoname) {
   const requestOptions = {
     method: "POST",
-    headers: authHeader(),
     body: JSON.stringify({ name: photoname})
   };
 
@@ -66,7 +61,6 @@ function handleResponse(response) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject(error);
     }
-
     return data;
   });
 }
