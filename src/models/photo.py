@@ -5,7 +5,7 @@ class PhotoModel(db.Model):
   id = db.Field(_type = "integer", primary_key =  True)
   description = db.Field(_type = "string")
   author = db.Field(_type = "string")
-  author_id = db.Field(_type = "integer")
+  author_id = db.Field(_type = "string")
   timestamp = db.Field(_type = "integer")
   __tablename__ = "photos"
 

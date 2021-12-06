@@ -11,7 +11,7 @@ from PIL import Image, ImageOps
 class Photo(Resource):
   parser = reqparse.RequestParser()
   parser.add_argument('author_id',
-                      type=int,
+                      type=str,
                       required=True,
                       help="Author identifier."
                       )
@@ -74,7 +74,7 @@ class PhotoList(Resource):
 class NewPhoto(Resource):
   parser = reqparse.RequestParser()
   parser.add_argument('author_id',
-                      type=int,
+                      type=str,
                       required=True,
                       help="Author identifier."
                       )

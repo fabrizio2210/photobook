@@ -70,6 +70,14 @@ export default {
       }
       return "";
     },
+    uid () {
+      if (this.$store.state.authentication.user) {
+        if (this.$store.state.authentication.user.uid) {
+          return this.$store.state.authentication.user.uid;
+        }
+      }
+      return "12345";
+    },
   },
 
   methods: {
@@ -78,7 +86,7 @@ export default {
       vm.files[0].data = {
         'author': this.$sanitize(vm.author),
         'description': this.$sanitize(vm.description),
-        'author_id': '12345'
+        'author_id': vm.uid, 
       };
       refs.upload.active = true;
     },
