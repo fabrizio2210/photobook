@@ -1,6 +1,6 @@
 <template>
   <div class="upload">
-    <h2>Carica qui la tua foto</h2>
+    <h2>Upload here your photo</h2>
     <div class="buttons-upload">
       <UploadImage 
           class="btn-primary"
@@ -12,33 +12,33 @@
           ref="upload"
           @input-filter="inputFilter"
           v-model="files" >
-         <button v-if="!files.length" class="btn">Seleziona un'immagine</button>
+         <button v-if="!files.length" class="btn">Select an image</button>
          <div v-for="file in files" :key="file.id">
            <div><img class="image-thumb" v-if="file.thumb" :src="file.thumb" /></div>
            <div>{{formatSize(file.size)}}</div>
            <div class="transfer-status" v-if="file.error">{{file.error}}</div>
-           <div class="transfer-status" v-else-if="file.success">fatto, clicca sull'immagine per cambiare</div>
-           <div class="transfer-status" v-else-if="file.active">trasferimento  <img src="../assets/loading.gif"/></div>
+           <div class="transfer-status" v-else-if="file.success">done, click on the image to change it</div>
+           <div class="transfer-status" v-else-if="file.active">transfer  <img src="../assets/loading.gif"/></div>
            <div class="transfer-status" v-else-if="!!file.error">{{file.error}}</div>
-           <div class="transfer-status" v-else>clicca sull'immagine per cambiare</div>
+           <div class="transfer-status" v-else>click on the image to change it</div>
          </div>
       </UploadImage>
     </div>
     <div class="text-input-group">
       <div class="form-group">
-          <label>Descrizione:
+          <label>Description:
               <textarea cols="40" rows="5" v-model="description" class="form-description"/>
           </label>
       </div>
       <div class="form-group">
-          <label>Il tuo nome:
+          <label>Your name:
               <input type="text" v-model="author" class="form-author" />
           </label>
       </div>
       </div>
     <div>
-      <button v-show="(!$refs.upload || !$refs.upload.active) && files.length" @click.prevent="uploadFile($refs)" class="btn" type="btn">Carica</button>
-      <button v-show="$refs.upload && $refs.upload.active" @click.prevent="$refs.upload.active = false" class="btn-stop" type="btn">Ferma</button>
+      <button v-show="(!$refs.upload || !$refs.upload.active) && files.length" @click.prevent="uploadFile($refs)" class="btn" type="btn">Upload</button>
+      <button v-show="$refs.upload && $refs.upload.active" @click.prevent="$refs.upload.active = false" class="btn-stop" type="btn">Stop</button>
     </div>
   </div>
 </template>
