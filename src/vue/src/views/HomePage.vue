@@ -47,7 +47,7 @@ export default {
              this.populatePhotos(this.$store.state.photos.last_timestamp);
              break;
            default:
-             console.err('Event not known:', msg);
+             console.log('Event not known:', msg);
          }
        },
     },

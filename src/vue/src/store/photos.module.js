@@ -50,7 +50,14 @@ export const photos = {
         photos => commit("getOwnSuccess", photos["photos"]),
         error => commit("getOwnFailure", error)
       );
-    }
+    },
+   del({ commit }, { uid, id }) {
+     commit("deleteRequest");
+     photoService.del(uid, id).then(
+       photo => commit("deleteSuccess", photo['photo']),
+       error => commit("deleteFailure", error)
+     );
+   },
   },
   mutations: {
     creatingRequest(state) {
@@ -73,6 +80,9 @@ export const photos = {
     getSinceRequest(state) {
       state.all.loading = true ;
     },
+    deleteRequest(state) {
+      state.all.loading = true;
+    },
     getAllSuccess(state, photos) {
       const photos_list = photos.slice().reverse();
       Vue.set(state, 'last_timestamp', photos_list[0].timestamp);
@@ -93,6 +103,19 @@ export const photos = {
       state.my = { photos_list };
       Vue.delete(state.all, 'loading');
     },
+    deleteSuccess(state, photo) {
+      for(var i = 0; i < state.all.photos_list.length; i++){
+        if (state.all.photos_list[i].id == photo.id){
+          state.all.photos_list.splice(i, 1);
+        }
+      }
+      for(i = 0; i < state.my.photos_list.length; i++){
+        if (state.my.photos_list[i].id == photo.id){
+          state.my.photos_list.splice(i, 1);
+        }
+      }
+      Vue.delete(state.all, 'loading');
+    },
     getAllFailure(state, error) {
       state.all = { error };
     },
@@ -103,6 +126,9 @@ export const photos = {
       state.all = { error };
     },
     getFailure(state, error) {
+      state.all = { error };
+    },
+    deleteFailure(state, error) {
       state.all = { error };
     }
   }

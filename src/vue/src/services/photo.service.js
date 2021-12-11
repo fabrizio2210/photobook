@@ -7,7 +7,8 @@ export const photoService = {
   get,
   getSince,
   getOwn,
-  getAll
+  getAll,
+  del
 };
 
 function getAll() {
@@ -64,7 +65,21 @@ function create(photoname) {
     body: JSON.stringify({ name: photoname})
   };
 
-  return fetch(`${config.apiUrl}/api/v1/new_photo`, requestOptions).then(
+  return fetch(`${config.apiUrl}/api/new_photo`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function del(uid, id) {
+  var url = new URL(`/api/photo/${id}`, config.apiUrl);
+  const params = { 
+      author_id: uid
+  };
+  const requestOptions = {
+    method: "DELETE"
+  };
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, requestOptions).then(
     handleResponse
   );
 }

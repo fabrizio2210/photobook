@@ -36,7 +36,9 @@ class Photo(Resource):
       if photo[0].author_id == data.get('author_id', None):
         FileManager.delete_photo(photo[0].id)
         photo[0].delete_from_db()
-        return {'message': 'Item deleted.'}, 201
+        # Notify other clients
+        sse.publish('deleted ' + str(photo[0].id))
+        return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
 

@@ -3,11 +3,14 @@
         <em v-if="photos.loading">Loading photos...</em>
         <img v-show="photos.loading" src="../assets/loading.gif" />
         <span v-if="photos.error" class="text-danger">ERROR: {{photos.error}}</span>
-        <div class="photo-list" v-if="photos.photos_list">
-            <div class="photo-element" v-for="photo in photos.photos_list" :key="photo.id">
-                <img class="photo-img-element" loading=lazy :src=photo.location />
-                <div class="photo-description">{{photo.description}}</div>
-                <div v-show="photo.author" class="photo-author">-- {{photo.author}} --</div>
+        <div class="photo-grid" v-if="photos.photos_list">
+            <div class="photo-row" v-for="photo in photos.photos_list" :key="photo.id">
+                <button class="photo-col btn-delete" @click.prevent="deletePhoto(photo.id)" >X</button>
+                <div class="photo-col" >
+                    <img class="photo-img-edit-element" loading=lazy :src=photo.location />
+                </div>
+                <textarea class="photo-col" v-model=photo.description />
+                <textarea class="photo-col" v-model=photo.author />
             </div>
         </div>
     </div>
@@ -40,6 +43,10 @@ export default {
          if (typeof uid !== 'undefined') {
            this.$store.dispatch('photos/getOwn', {uid});
          }
+       },
+       deletePhoto(id) {
+         const uid = this.uid;
+         this.$store.dispatch('photos/del', {uid, id});
        },
     },
     mounted () {
