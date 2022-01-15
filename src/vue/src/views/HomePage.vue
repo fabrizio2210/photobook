@@ -42,13 +42,21 @@ export default {
          }
        },
        handleEvents(msg) {
-         switch(msg) {
-           case 'new_image':
-             this.populatePhotos(this.$store.state.photos.last_timestamp);
-             break;
-           default:
-             console.log('Event not known:', msg);
+         if (msg == 'new_image') {
+           this.populatePhotos(this.$store.state.photos.last_timestamp);
+           return
          }
+         if (msg.startsWith('deleted')){
+           const id = msg.split(' ')[1]
+           this.$store.dispatch('photos/get', {id});
+           return
+         } 
+         if (msg.startsWith('changed')){
+           const id = msg.split(' ')[1]
+           this.$store.dispatch('photos/get', {id});
+           return
+         } 
+         console.log('Event not known:', msg);
        },
     },
     mounted () {

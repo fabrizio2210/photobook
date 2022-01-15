@@ -13,20 +13,20 @@ export const photos = {
   actions: {
     creating({ dispatch, commit }, { photoname }) {
       commit("creatingRequest", {});
-        photoService.create(photoname).then(
-          photo => {
-            commit("creatingSuccess", photo);
-            router.push({
-              name: 'PhotoSettings',
-              params: { photo_id: photo.id }
-            });
-          },
-          error => {
-            commit("creatingFailure", error);
-            dispatch("alert/error", error, { root: true});
-          }
-        );
-      },
+      photoService.create(photoname).then(
+        photo => {
+          commit("creatingSuccess", photo);
+          router.push({
+            name: 'PhotoSettings',
+            params: { photo_id: photo.id }
+          });
+        },
+        error => {
+          commit("creatingFailure", error);
+          dispatch("alert/error", error, { root: true});
+        }
+      );
+    },
     getAll({ commit }) {
       commit("getAllRequest");
 
@@ -41,6 +41,14 @@ export const photos = {
       photoService.getSince(last_timestamp).then(
         photos => commit("getSinceSuccess", photos["photos"]),
         error => commit("getSinceFailure", error)
+      );
+    },
+    get({ commit }, { id }) {
+      commit("getRequest");
+
+      photoService.get(id).then(
+        photo => commit("getSuccess", photo["photo"]),
+        error => commit("getFailure", {error, id})
       );
     },
     getOwn({ commit }, { uid }) {
@@ -98,6 +106,19 @@ export const photos = {
     getOwnRequest(state) {
       state.all.loading = true ;
     },
+    getSuccess(state, photo) {
+      if (state.all.photos_list.length > 0){
+        for(var i = 0; i < state.all.photos_list.length; i++){
+          if (state.all.photos_list[i].id == photo.id){
+            state.all.photos_list[i] = photo;
+          }
+        }
+      } else {
+        var photo_list = [photo];
+        state.all = {photo_list};
+      }
+      Vue.delete(state.all, 'loading');
+    },
     getOwnSuccess(state, photos) {
       const photos_list = photos.slice().reverse();
       state.my = { photos_list };
@@ -126,7 +147,16 @@ export const photos = {
       state.all = { error };
     },
     getFailure(state, error) {
-      state.all = { error };
+      if (error.error == "Item not found."){
+        for(var i = 0; i < state.all.photos_list.length; i++){
+          if (state.all.photos_list[i].id == error.id){
+            state.all.photos_list.splice(i, 1);
+          }
+        }
+        Vue.delete(state.all, 'loading');
+      } else {
+        state.all = { error };
+      }
     },
     deleteFailure(state, error) {
       state.all = { error };

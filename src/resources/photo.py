@@ -42,6 +42,12 @@ class Photo(Resource):
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
 
+  def get(self, id):
+    photo = PhotoModel.find_by_id(id)
+    if photo:
+      return {'photo': FileManager.photo_to_client(photo[0].json())}, 200
+    return {'message': 'Item not found.'}, 404
+
   def put(self, id):
     if os.getenv('BLOCK_UPLOAD', False):
       return { 'message':
@@ -49,11 +55,19 @@ class Photo(Resource):
     data = Photo.parser.parse_args()
     photo = PhotoModel.find_by_id(id)
     if photo:
-      photo[0].name = data['name']
+      if photo[0].author_id == data.get('author_id', None):
+        if data.get('description') is not None:
+          photo[0].description = data.get('description')
+        if data.get('author') is not None:
+          photo[0].author = data.get('author')
+        photo[0].save_to_db()
+        # Notify other clients
+        sse.publish('changed ' + str(photo[0].id))
+      else:
+        return {'message': 'Not authorized'}, 403
     else:
-      photo[0] = PhotoModel(None, **data)
-    photo[0].save_to_db()
-    return photo[0].json()
+      return {'message': 'Item not found.'}, 404
+    return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
 
 class PhotoList(Resource):
   parser = reqparse.RequestParser()

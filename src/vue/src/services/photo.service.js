@@ -21,12 +21,12 @@ function getAll() {
   );
 }
 
-function get(photo_id) {
+function get(id) {
   const requestOptions = {
     method: "GET"
   };
 
-  return fetch(`${config.apiUrl}/api/photo/${photo_id}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/api/photo/${id}`, requestOptions).then(
     handleResponse
   );
 }
