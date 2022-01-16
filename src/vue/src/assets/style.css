@@ -1,3 +1,7 @@
+body {
+  background-color: black;
+}
+
 .output {
   white-space: pre;
   text-align: left;
