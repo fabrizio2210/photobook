@@ -17,6 +17,7 @@ body {
 }
 
 label {
+  display: block;
   padding: 0 10px 0 0;
   vertical-align: middle;
 }
@@ -82,15 +83,23 @@ label {
 }
 
 .photo-img-edit-element {
-  width: 80%;
+  width: 60%;
 }
 
 .photo-row {
   display: flex;
 }
 
-.photo-col {
-  flex: 1;
+.photo-col-txt {
+  flex: 2;
+}
+
+.photo-col-btn {
+  flex: 0;
+}
+
+.photo-col-img {
+  flex: 4;
 }
 
 .btn-stop {
@@ -137,6 +146,50 @@ label {
   touch-action: manipulation;
 }
 
+.btn-edit {
+  background-color: #42ee11;
+  border: 1px solid #42ee11;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  outline: 0;
+  margin: 3%;
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.btn-ok {
+  background-color: #11ee42;
+  border: 1px solid #11ee42;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  outline: 0;
+  margin: 3%;
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
 @media (min-width: 768px) {
   .btn {
     padding: 10px 30px;
@@ -144,13 +197,16 @@ label {
   .btn-stop {
     padding: 10px 30px;
   }
+  .btn-edit {
+    padding: 10px 30px;
+  }
+  .btn-ok {
+    padding: 10px 30px;
+  }
   .btn-delete {
     padding: 10px 30px;
   }
   .photo-img-element {
-    width: 60%;
-  }
-  .photo-img-edit-element {
     width: 60%;
   }
   .image-thumb {

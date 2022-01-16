@@ -1,7 +1,7 @@
 <template>
   <div class="credentialmanager">
-    <div v-if="auth.user" >
-      <p>Logged in as: {{auth.user.uid}}</p>
+    <div v-if="auth.user">
+      <p>Logged in as: {{ auth.user.uid }}</p>
     </div>
   </div>
 </template>
@@ -10,20 +10,19 @@
 export default {
   name: "CredentialManager",
   data: function() {
-    return {
-    }
-  }, 
+    return {};
+  },
 
   computed: {
-    auth () {
+    auth() {
       return this.$store.state.authentication;
-    },
+    }
   },
 
   methods: {
     async getUid() {
-      this.$store.dispatch('authentication/get_uid');
-    },
+      this.$store.dispatch("authentication/get_uid");
+    }
   },
   mounted() {
     if (!this.auth.user) {

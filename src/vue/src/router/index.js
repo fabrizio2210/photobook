@@ -14,9 +14,9 @@ const routes = [
     component: HomePage
   },
   {
-    path: '/upload',
+    path: "/upload",
     name: "Upload",
-    component: Upload,
+    component: Upload
   },
   {
     path: "/edit",
@@ -33,4 +33,3 @@ const router = new VueRouter({
 });
 
 export default router;
-

@@ -5,7 +5,7 @@ import App from "./App.vue";
 import VueSSE from "vue-sse";
 import vueInsomnia from "vue-insomnia";
 import VueSanitize from "vue-sanitize";
-import './assets/style.css';
+import "./assets/style.css";
 
 Vue.use(vueInsomnia);
 Vue.use(VueSanitize);

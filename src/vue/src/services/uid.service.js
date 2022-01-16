@@ -11,9 +11,7 @@ function getUid() {
     method: "GET"
   };
 
-  return fetch(`${config.apiUrl}/api/uid`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/api/uid`, requestOptions).then(handleResponse);
 }
 
 function handleResponse(response) {

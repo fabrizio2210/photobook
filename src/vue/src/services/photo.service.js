@@ -8,6 +8,7 @@ export const photoService = {
   getSince,
   getOwn,
   getAll,
+  put,
   del
 };
 
@@ -33,36 +34,32 @@ function get(id) {
 
 function getSince(timestamp) {
   var url = new URL(`/api/photos`, config.apiUrl);
-  const params = { 
-      timestamp: timestamp
+  const params = {
+    timestamp: timestamp
   };
   const requestOptions = {
     method: "GET"
   };
   url.search = new URLSearchParams(params).toString();
-  return fetch(url, requestOptions).then(
-    handleResponse
-  );
+  return fetch(url, requestOptions).then(handleResponse);
 }
 
 function getOwn(uid) {
   var url = new URL(`/api/photos`, config.apiUrl);
-  const params = { 
-      author_id: uid
+  const params = {
+    author_id: uid
   };
   const requestOptions = {
     method: "GET"
   };
   url.search = new URLSearchParams(params).toString();
-  return fetch(url, requestOptions).then(
-    handleResponse
-  );
+  return fetch(url, requestOptions).then(handleResponse);
 }
 
 function create(photoname) {
   const requestOptions = {
     method: "POST",
-    body: JSON.stringify({ name: photoname})
+    body: JSON.stringify({ name: photoname })
   };
 
   return fetch(`${config.apiUrl}/api/new_photo`, requestOptions).then(
@@ -70,18 +67,35 @@ function create(photoname) {
   );
 }
 
+function put(uid, photo) {
+  var url = new URL(`/api/photo/${photo.id}`, config.apiUrl);
+  const params = {
+    author_id: uid
+  };
+  const requestOptions = {
+    headers: {
+      "Content-Type": "application/json"
+    },
+    method: "PUT",
+    body: JSON.stringify({
+      author: photo.author,
+      description: photo.description
+    })
+  };
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
 function del(uid, id) {
   var url = new URL(`/api/photo/${id}`, config.apiUrl);
-  const params = { 
-      author_id: uid
+  const params = {
+    author_id: uid
   };
   const requestOptions = {
     method: "DELETE"
   };
   url.search = new URLSearchParams(params).toString();
-  return fetch(url, requestOptions).then(
-    handleResponse
-  );
+  return fetch(url, requestOptions).then(handleResponse);
 }
 
 function handleResponse(response) {

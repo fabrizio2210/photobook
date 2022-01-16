@@ -3,8 +3,10 @@ export function authHeader() {
   let user = JSON.parse(localStorage.getItem("user"));
 
   if (user && user.uid) {
-    return { Authorization: "JWT " + user.uid,
-              "Content-Type" : "application/json"};
+    return {
+      Authorization: "JWT " + user.uid,
+      "Content-Type": "application/json"
+    };
   } else {
     return {};
   }

@@ -1,8 +1,8 @@
 <template>
   <div class="jumbotron" id="app">
     <div id="nav">
-      <router-link to="/">Home</router-link> | 
-      <router-link to="/upload">Upload</router-link> | 
+      <router-link to="/">Home</router-link> |
+      <router-link to="/upload">Upload</router-link> |
       <router-link to="/edit">Edit</router-link>
     </div>
     <router-view />
@@ -10,8 +10,10 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-6 offset-sm-3">
-          <div v-if="alert.message" :class="`alert ${alert.type}`">{{alert.message}}</div>
+          <div v-if="alert.message" :class="`alert ${alert.type}`">
+            {{ alert.message }}
           </div>
+        </div>
       </div>
     </div>
   </div>
@@ -25,17 +27,17 @@ export default {
     CredentialManager
   },
   computed: {
-      alert () {
-          return this.$store.state.alert
-      }
+    alert() {
+      return this.$store.state.alert;
+    }
   },
-  watch:{
-      $route (){
-          // clear alert on location change
-          this.$store.dispatch('alert/clear');
-      }
-  } 
-}
+  watch: {
+    $route() {
+      // clear alert on location change
+      this.$store.dispatch("alert/clear");
+    }
+  }
+};
 </script>
 
 <style>
