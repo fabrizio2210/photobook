@@ -120,8 +120,10 @@ export default {
       this.$store.dispatch("photos/edit", { uid, photo });
     },
     deletePhoto(id) {
-      const uid = this.uid;
-      this.$store.dispatch("photos/del", { uid, id });
+      if (confirm("Do you really want to delete this photo?")) {
+        const uid = this.uid;
+        this.$store.dispatch("photos/del", { uid, id });
+      }
     }
   },
   mounted() {
