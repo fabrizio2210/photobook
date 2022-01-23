@@ -73,6 +73,10 @@ label {
   touch-action: manipulation;
 }
 
+.btn-container {
+  margin-top: 12.5%;
+}
+
 .photo-element {
   width: 100%;
   padding: 20px 0 20px 0;

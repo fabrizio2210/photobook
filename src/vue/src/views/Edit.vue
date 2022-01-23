@@ -11,20 +11,24 @@
         v-for="photo in photos.photos_list"
         :key="photo.id"
       >
-        <button
-          class="photo-col-btn btn-delete"
-          v-show="!photo.edit"
-          @click.prevent="deletePhoto(photo.id)"
-        >
-          X
-        </button>
-        <button
-          class="photo-col-btn btn-edit"
-          v-show="!photo.edit"
-          @click.prevent="editPhoto(photo.id)"
-        >
-          E
-        </button>
+        <div class="btn-container">
+          <button
+            class="photo-col-btn btn-delete"
+            v-show="!photo.edit"
+            @click.prevent="deletePhoto(photo.id)"
+          >
+            Delete
+          </button>
+        </div>
+        <div class="btn-container">
+          <button
+            class="photo-col-btn btn-edit"
+            v-show="!photo.edit"
+            @click.prevent="editPhoto(photo.id)"
+          >
+            Edit
+          </button>
+        </div>
         <div class="photo-col-img">
           <img
             class="photo-img-edit-element"
