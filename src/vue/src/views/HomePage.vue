@@ -11,7 +11,12 @@
         v-for="photo in photos.photos_list"
         :key="photo.id"
       >
-        <img class="photo-img-element" loading="lazy" :src="photo.location" />
+        <img
+          class="photo-img-element"
+          loading="lazy"
+          @error="imgError(photo.id)"
+          :src="photo.location"
+        />
         <div class="photo-description">{{ photo.description }}</div>
         <div v-show="photo.author" class="photo-author">
           -- {{ photo.author }} --
@@ -47,6 +52,9 @@ export default {
       } else {
         this.$store.dispatch("photos/getAll");
       }
+    },
+    imgError(id) {
+      this.$store.dispatch("photos/get", { id });
     },
     handleEvents(msg) {
       if (msg == "new_image") {

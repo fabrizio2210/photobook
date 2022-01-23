@@ -129,8 +129,8 @@ export const photos = {
           }
         }
       } else {
-        var photo_list = [photo];
-        state.all = { photo_list };
+        var photos_list = [photo];
+        state.all = { photos_list };
       }
       Vue.delete(state.all, "loading");
     },
@@ -140,14 +140,18 @@ export const photos = {
       Vue.delete(state.all, "loading");
     },
     deleteSuccess(state, photo) {
-      for (var i = 0; i < state.all.photos_list.length; i++) {
-        if (state.all.photos_list[i].id == photo.id) {
-          state.all.photos_list.splice(i, 1);
+      if (typeof state.all.photos_list !== "undefined") {
+        for (var i = 0; i < state.all.photos_list.length; i++) {
+          if (state.all.photos_list[i].id == photo.id) {
+            state.all.photos_list.splice(i, 1);
+          }
         }
       }
-      for (i = 0; i < state.my.photos_list.length; i++) {
-        if (state.my.photos_list[i].id == photo.id) {
-          state.my.photos_list.splice(i, 1);
+      if (typeof state.my.photos_list !== "undefined") {
+        for (i = 0; i < state.my.photos_list.length; i++) {
+          if (state.my.photos_list[i].id == photo.id) {
+            state.my.photos_list.splice(i, 1);
+          }
         }
       }
       Vue.delete(state.all, "loading");
@@ -175,15 +179,18 @@ export const photos = {
           Vue.set(state.my.photos_list, i, photo);
         }
       }
-      if (state.all.photos_list.length > 0) {
+      if (
+        typeof state.all.photos_list !== "undefined" &&
+        state.all.photos_list.length > 0
+      ) {
         for (i = 0; i < state.all.photos_list.length; i++) {
           if (state.all.photos_list[i].id == photo.id) {
             state.all.photos_list[i] = photo;
           }
         }
       } else {
-        var photo_list = [photo];
-        state.all = { photo_list };
+        var photos_list = [photo];
+        state.all = { photos_list };
       }
     },
     unedit(state, id) {
