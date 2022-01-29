@@ -1,0 +1,25 @@
+FROM debian
+MAINTAINER fabrizio2210
+
+ENV APP_FOLDER="/opt/web"
+
+RUN apt-get update && apt-get install -y \
+    npm \
+    curl
+
+RUN apt remove -y nodejs nodejs-doc
+
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+
+RUN mkdir -p ${APP_FOLDER}/src
+COPY src/vue/package.json ${APP_FOLDER}/
+COPY src/vue/vue.config.js ${APP_FOLDER}/
+COPY src/vue/config/ ${APP_FOLDER}/
+
+RUN cd ${APP_FOLDER} && \
+    npm install
+
+# COMMAND
+WORKDIR ${APP_FOLDER}
+CMD npm run serve
