@@ -13,7 +13,7 @@ services:
       - "--providers.docker.exposedByDefault=false"
       - "--accessLog"
       - "--log.level=INFO"
-      - "--providers.docker.network=backends"
+      - "--providers.docker.network=lib_backends"
       - "--metrics"
       - "--metrics.prometheus"
     volumes:
