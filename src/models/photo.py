@@ -1,22 +1,15 @@
 from db import db
+import logging
 
 
 class PhotoModel(db.Model):
-  id = db.Field(_type = "integer", primary_key =  True)
-  description = db.Field(_type = "string")
-  author = db.Field(_type = "string")
-  author_id = db.Field(_type = "string")
-  timestamp = db.Field(_type = "integer")
   __tablename__ = "photos"
 
-  def __init__(self, id, description, author_id, author, timestamp):
-    self.description = description
-    self.author = author
-    self.author_id = author_id
-    self.timestamp = timestamp
-    self.id = id
+  def __init__(self, **kwargs):
+    for arg in kwargs.keys():
+      setattr(self, arg, kwargs[arg])
 
-  def json(self):
+  def public_json(self):
     return {'id': self.id,
             'description': self.description,
             'author': self.author,
@@ -34,13 +27,14 @@ class PhotoModel(db.Model):
 
   @classmethod
   def get_all_photos(cls):
+    logging.debug("Retrieving all the photos.")
     return cls.find()
 
   @classmethod
   def find_by_id(cls, id):
     return cls.find(id=id)
 
-
   @classmethod
   def find_by_timestamp(cls, timestamp):
+    logging.debug("Retrieving phots since \"%d\" timestamp.", timestamp)
     return cls.greaterThan(timestamp=timestamp)

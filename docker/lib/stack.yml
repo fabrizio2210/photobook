@@ -81,7 +81,6 @@ services:
       traefik.http.services.backend-service.loadbalancer.server.port: 80
       traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
     environment:
-      DB_PATH: /static_files/data.db
       REDIS_URL: redis://redis
     volumes:
       - static_files:/static_files
@@ -90,6 +89,15 @@ services:
 
   redis:
     image: redis
+    networks:
+      - backends
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: develop
     networks:
       - backends
 

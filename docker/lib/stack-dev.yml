@@ -83,7 +83,6 @@ services:
       traefik.http.services.backend-service.loadbalancer.server.port: 5000
       traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
     environment:
-      DB_PATH: /static_files/data.db
       REDIS_URL: redis://redis
     volumes:
       - static_files:/static_files
@@ -93,6 +92,31 @@ services:
 
   redis:
     image: redis
+    networks:
+      - backends
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: develop
+    networks:
+      - backends
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    labels: 
+      traefik.port: 80
+      traefik.enable: "true"
+      traefik.mongoexpress.rule: "Host(`mongo-express`)  && PathPrefix(`/`)"
+      traefik.http.services.mongoexpress-service.loadbalancer.server.port: 8081
+      traefik.http.routers.mongoexpress.rule: "Host(`mongo-express`) && PathPrefix(`/`)"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: develop
+      ME_CONFIG_MONGODB_URL: mongodb://root:develop@mongo:27017/
     networks:
       - backends
 

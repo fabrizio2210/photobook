@@ -1,6 +1,7 @@
 import time
 import os
 import werkzeug
+import logging
 from flask_restful import Resource, reqparse
 from flask_sse import sse
 from models.photo import PhotoModel
@@ -27,6 +28,7 @@ class Photo(Resource):
                       )
 
   def delete(self, id):
+    id = str(id)
     data = Photo.parser.parse_args()
     if os.getenv('BLOCK_UPLOAD', False):
       return { 'message':
@@ -43,12 +45,14 @@ class Photo(Resource):
     return {'message': 'Item not found.'}, 404
 
   def get(self, id):
+    id = str(id)
     photo = PhotoModel.find_by_id(id)
     if photo:
       return {'photo': FileManager.photo_to_client(photo[0].json())}, 200
     return {'message': 'Item not found.'}, 404
 
   def put(self, id):
+    id = str(id)
     if os.getenv('BLOCK_UPLOAD', False):
       return { 'message':
         os.getenv('BLOCK_UPLOAD_MSG', 'The upload is blocked by admin.')}, 403
@@ -95,8 +99,9 @@ class PhotoList(Resource):
                              PhotoModel.find_by_timestamp(data['timestamp'])
                          ))
              }
+    logging.debug("In the resources: %s", PhotoModel.get_all_photos())
     return {'photos': list(map(lambda x: 
-                           FileManager.photo_to_client(x.json()),
+                           FileManager.photo_to_client(x.public_json()),
                            PhotoModel.get_all_photos()
                        ))
            }

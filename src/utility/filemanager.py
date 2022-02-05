@@ -1,4 +1,5 @@
 import os
+import logging
 from models.photo import PhotoModel
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -32,8 +33,10 @@ class FileManager():
 
   @classmethod
   def delete_photo(cls, id):
-    if os.path.isfile(os.path.join(cls.upload_folder, cls.get_file_name(id))):
-      os.unlink(os.path.join(cls.upload_folder, cls.get_file_name(id)))
+    file_path = os.path.join(cls.upload_folder, cls.get_file_name(id))
+    if os.path.isfile(file_path):
+      logging.debug("Deleting file: %s", file_path)
+      os.unlink(file_path)
 
   @classmethod
   def photo_to_client(cls, photo):
