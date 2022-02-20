@@ -36,6 +36,14 @@ user@host:~/photobook docker/lib/createLocalDevStack.sh
 Your development stack is reacheable at http://localhost/
 You can modify the code from your GIT folder (so not in the Docker containers) and the servers (Vue and Flask) will automatically update.
 
+
+### Steps to use unittest against API
+
+```
+user@host:~ cd photobook/
+user@host:~/photobook docker/lib/test-app.sh
+```
+
 ## Deployment
 
 The following steps will create a local stack in Docker. The script creates from the source the new images and start all the necessary components to serve the single page application.
