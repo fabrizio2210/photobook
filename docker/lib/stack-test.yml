@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+
+  flask:
+    image: fabrizio2210/photobook-backend-dev
+    command: python3 /opt/web/tests/test-app.py
+    links:
+      - "redis"
+      - "mongo"
+    deploy:
+      replicas: 1
+    environment:
+      REDIS_URL: redis://redis
+    volumes:
+      - ../../src:/opt/web
+
+  redis:
+    image: redis
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: develop
