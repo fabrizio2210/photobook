@@ -1,3 +1,0 @@
----
-- import_playbook: lib/setInfrared.yml
-- import_playbook: lib/setWebserver.yml
