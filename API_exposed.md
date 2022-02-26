@@ -37,4 +37,3 @@ Where the user can see all the photos
 ## Notification
 
 ### /api/notification
-
