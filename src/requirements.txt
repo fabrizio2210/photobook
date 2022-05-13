@@ -14,4 +14,4 @@ testinfra==3.2.1
 uWSGI==2.0.18
 Pillow
 flask-sse
-pymongo
+pymongo==3.10.1
