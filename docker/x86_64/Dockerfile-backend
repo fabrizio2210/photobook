@@ -10,13 +10,16 @@ RUN apt-get update && apt-get install -y nginx \
     sed \
     curl \
     supervisor \
+    gcc \
     python3.9 \
     python3-pip \
-    python3-setuptools \
+    python3-dev \
     python3-setuptools \
     python-setuptools \
     libpcre3 \
     libpcre3-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     && apt-get clean
 
 
