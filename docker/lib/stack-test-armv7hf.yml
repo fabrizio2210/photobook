@@ -13,7 +13,7 @@ services:
     environment:
       REDIS_URL: redis://redis
     volumes:
-      - ../../src:/opt/web
+      - ./src:/opt/web
 
   redis:
     image: redis
