@@ -19,5 +19,7 @@ fi
 repository='/tmp'
 changedFiles="$(git diff --name-only HEAD^1 HEAD)"
 
+echo $(pwd)
 docker/lib/test-app.sh
+echo $?
 exit 0
