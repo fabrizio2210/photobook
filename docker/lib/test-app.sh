@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# Supposing to deploy on x86_64 architecture
 docker build -t fabrizio2210/photobook-backend-dev -f docker/x86_64/Dockerfile-backend-dev .
-docker-compose -f docker/lib/stack-test.yml run flask
-docker-compose -f docker/lib/stack-test.yml down
+if [ "$(uname -m)" == "x86_64" ]; then
+  stack="docker/lib/stack-test-x86_64.yml"
+else
+  stack="docker/lib/stack-test-armv7hf.yml"
+fi
+
+docker-compose -f ${stack} run flask
+docker-compose -f ${stack} down
