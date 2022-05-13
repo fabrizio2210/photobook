@@ -12,8 +12,6 @@ services:
       replicas: 1
     environment:
       REDIS_URL: redis://redis
-    volumes:
-      - /src:/opt/web
 
   redis:
     image: redis

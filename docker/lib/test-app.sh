@@ -8,5 +8,5 @@ else
   stack="docker/lib/stack-test-armv7hf.yml"
 fi
 
-docker-compose -f ${stack} run flask
+docker-compose -f ${stack} run -v $(pwd)/src:/opt/web flask
 docker-compose -f ${stack} down
