@@ -3,7 +3,7 @@ version: '3.4'
 services:
 
   flask:
-    image: fabrizio2210/photobook-backend-dev
+    image: fabrizio2210/photobook-backend
     command: python3 /opt/web/tests/test-app.py
     links:
       - "redis"
