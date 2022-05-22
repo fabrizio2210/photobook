@@ -44,6 +44,12 @@ EOF
   fi
 fi
 
+#######
+# Build
+
+docker build -t fabrizio2210/photobook-frontend:${arch} -f docker/x86_64/Dockerfile-frontend .
+docker build -t fabrizio2210/photobook-backend:${arch} -f docker/x86_64/Dockerfile-backend .
+
 ######
 # Test
 
@@ -52,4 +58,5 @@ docker/lib/test-app.sh
 ######
 # Push
 
+docker push fabrizio2210/photobook-frontend:${arch}
 docker push fabrizio2210/photobook-backend:${arch}
