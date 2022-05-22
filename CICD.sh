@@ -22,12 +22,13 @@ fi
 ################
 # Login creation
 
-mkdir -p ~/.docker/
+if [ ! -f ~/.docker/config.json ] ; then 
+  mkdir -p ~/.docker/
 
-if [ -z "$DOCKER_LOGIN" ] ; then
-	echo "Docker login not found in the environment, set DOCKER_LOGIN"
-else
-  cat << EOF > ~/.docker/config.json
+  if [ -z "$DOCKER_LOGIN" ] ; then
+	  echo "Docker login not found in the environment, set DOCKER_LOGIN"
+  else
+    cat << EOF > ~/.docker/config.json
 {
   "experimental": "enabled",
         "auths": {
@@ -40,6 +41,7 @@ else
         }
 }
 EOF
+  fi
 fi
 
 ######
@@ -50,4 +52,4 @@ docker/lib/test-app.sh
 ######
 # Push
 
-docker push -t fabrizio2210/photobook-backend:${arch}
+docker push fabrizio2210/photobook-backend:${arch}
