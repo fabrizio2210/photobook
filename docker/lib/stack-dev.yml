@@ -120,6 +120,13 @@ services:
     networks:
       - backends
 
+  worker:
+    image: fabrizio2210/photobook-worker-dev
+    volumes:
+      - ../../src/go:/usr/src/app
+    networks:
+      - backends
+
 volumes:
   static_files:
 
