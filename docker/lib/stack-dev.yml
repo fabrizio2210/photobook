@@ -122,6 +122,8 @@ services:
 
   worker:
     image: fabrizio2210/photobook-worker-dev
+    environment:
+      NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
     volumes:
       - ../../src/go:/usr/src/app
     networks:
