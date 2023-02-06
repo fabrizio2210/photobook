@@ -6,4 +6,8 @@ option go_package = "github.com/fabrizio2210/photobook";
 message PhotoIn {
   optional string author_id = 1;
   optional bytes photo = 2;
+  optional string id = 3;
+  optional string author = 4;
+  optional int64 timestamp = 5;
+  optional string description = 6;
 }

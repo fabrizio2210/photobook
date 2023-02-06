@@ -1,4 +1,5 @@
 import time
+import uuid
 import io
 import os
 import werkzeug
@@ -143,16 +144,11 @@ class NewPhoto(Resource):
       return {"message": "File name extension not allowed."}, 401
 
     # Create a new photo in DB
-    photo = PhotoModel(id=None,
+    photo = PhotoModel(id=str(uuid.uuid4()),
                        description=data.get('description', ''),
                        author=data.get('author', ''),
-                       author_id=data['author_id'],
+                       author_id=str(data['author_id']),
                        timestamp=int(time.time()*1000))
-    try:
-      photo.save_to_db()
-    except Exception as e:
-      print(e)
-      return {"message": "An error occurred inserting the photo."}, 500
 
     # Image processing
     image = Image.open(image_file)
@@ -161,14 +157,20 @@ class NewPhoto(Resource):
     image.thumbnail((900,600))
 
     # Save photo on filesystem
-    #image.save(FileManager.path_to_upload_folder(photo.id))
+    image.save(FileManager.path_to_upload_folder(photo.id))
+
+    # Enque photo to check
     with io.BytesIO() as output:
       image.save(output, format="JPEG")
       logging.info("Author_id:%s" % data['author_id'])
       RedisWrapper.enque_photo(
                                 go.photo_in_pb2.PhotoIn(
+                                  id=photo.id,
                                   photo=output.getvalue(),
-                                  author_id=str(data['author_id'])
+                                  description=photo.description,
+                                  author_id=photo.author_id,
+                                  author=photo.author,
+                                  timestamp=photo.timestamp
                                 )
                               )
 

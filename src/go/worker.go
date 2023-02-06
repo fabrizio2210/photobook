@@ -1,5 +1,6 @@
 package main
 
+
 import (
     "context"
     "encoding/json"
@@ -8,6 +9,7 @@ import (
     "bytes"
     "net/http"
     "io/ioutil"
+    "db"
 
     "github.com/go-redis/redis/v8"
     "github.com/golang/protobuf/proto"
@@ -69,5 +71,7 @@ func main() {
 	fmt.Printf("Author: %s\n", *photo_in.AuthorId)
         fmt.Printf("Photo length: %+v\n", len(photo_in.Photo))
 	// fmt.Println("IsNudity:", isNudity(photo_in.Photo))
+        db.AcceptPhoto(photo_in)
+        //db.DiscardPhoto(photo_in)
     }
 }

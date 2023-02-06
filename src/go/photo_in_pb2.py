@@ -17,9 +17,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='go/photo_in.proto',
   package='photobook',
   syntax='proto2',
-  serialized_options=None,
+  serialized_options=b'Z!github.com/fabrizio2210/photobook',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11go/photo_in.proto\x12\tphotobook\"+\n\x07PhotoIn\x12\x11\n\tauthor_id\x18\x01 \x01(\t\x12\r\n\x05photo\x18\x02 \x01(\x0c'
+  serialized_pb=b'\n\x11go/photo_in.proto\x12\tphotobook\"o\n\x07PhotoIn\x12\x11\n\tauthor_id\x18\x01 \x01(\t\x12\r\n\x05photo\x18\x02 \x01(\x0c\x12\n\n\x02id\x18\x03 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\tB#Z!github.com/fabrizio2210/photobook'
 )
 
 
@@ -47,6 +47,34 @@ _PHOTOIN = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='id', full_name='photobook.PhotoIn.id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='author', full_name='photobook.PhotoIn.author', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='photobook.PhotoIn.timestamp', index=4,
+      number=5, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='description', full_name='photobook.PhotoIn.description', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -60,7 +88,7 @@ _PHOTOIN = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=32,
-  serialized_end=75,
+  serialized_end=143,
 )
 
 DESCRIPTOR.message_types_by_name['PhotoIn'] = _PHOTOIN
@@ -74,4 +102,5 @@ PhotoIn = _reflection.GeneratedProtocolMessageType('PhotoIn', (_message.Message,
 _sym_db.RegisterMessage(PhotoIn)
 
 
+DESCRIPTOR._options = None
 # @@protoc_insertion_point(module_scope)

@@ -84,6 +84,8 @@ services:
       traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
     environment:
       REDIS_URL: redis://redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
     volumes:
       - static_files:/static_files
       - ../../src:/opt/web
@@ -125,6 +127,8 @@ services:
     environment:
       NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
       REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
     volumes:
       - ../../src/go:/usr/src/app
     networks:
