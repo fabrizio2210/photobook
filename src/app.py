@@ -32,7 +32,8 @@ api.add_resource(Uid,     '/api/uid')
 # Initialise from envrironment variables
 db.set_db_url(os.getenv('DB_URL', 'mongodb://root:develop@mongo:27017/'))
 db.set_db_name(os.getenv('DB_NAME', 'photobook'))
-FileManager.set_upload_folder(os.getenv('STATIC_FILES_PATH', '/tmp'))
+FileManager.set_upload_folder(os.getenv('STATIC_FILES_PATH', '/tmp') + '/resized')
+FileManager.set_full_quality_folder(os.getenv('STATIC_FILES_PATH', '/tmp') + '/orig')
 RedisWrapper.init(url=os.getenv('REDIS_URL', 'redis://localhost'))
 
 # Initialise data

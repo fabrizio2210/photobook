@@ -154,6 +154,9 @@ class NewPhoto(Resource):
     image = Image.open(image_file)
     image = ImageOps.exif_transpose(image)
 
+    # Save full quality photo
+    image.save(FileManager.path_to_full_quality_folder(photo.id))
+
     image.thumbnail((900,600))
 
     # Save photo on filesystem
