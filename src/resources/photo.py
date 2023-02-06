@@ -1,11 +1,14 @@
 import time
+import io
 import os
 import werkzeug
 import logging
+import go.photo_in_pb2
 from flask_restful import Resource, reqparse
-from flask_sse import sse
 from models.photo import PhotoModel
+from redis import Redis
 from utility.filemanager import FileManager
+from redis_wrapper import RedisWrapper
 from PIL import Image, ImageOps
 
 
@@ -39,7 +42,7 @@ class Photo(Resource):
         FileManager.delete_photo(photo[0].id)
         photo[0].delete_from_db()
         # Notify other clients
-        sse.publish('deleted ' + str(photo[0].id))
+        #sse.publish('deleted ' + str(photo[0].id))
         return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
@@ -66,7 +69,8 @@ class Photo(Resource):
           photo[0].author = data.get('author')
         photo[0].save_to_db()
         # Notify other clients
-        sse.publish('changed ' + str(photo[0].id))
+        RedisWrapper.publish('changed ' + str(photo[0].id))
+        #sse.publish('changed ' + str(photo[0].id))
       else:
         return {'message': 'Not authorized'}, 403
     else:
@@ -157,9 +161,18 @@ class NewPhoto(Resource):
     image.thumbnail((900,600))
 
     # Save photo on filesystem
-    image.save(FileManager.path_to_upload_folder(photo.id))
+    #image.save(FileManager.path_to_upload_folder(photo.id))
+    with io.BytesIO() as output:
+      image.save(output, format="JPEG")
+      logging.info("Author_id:%s" % data['author_id'])
+      RedisWrapper.enque_photo(
+                                go.photo_in_pb2.PhotoIn(
+                                  photo=output.getvalue(),
+                                  author_id=str(data['author_id'])
+                                )
+                              )
 
     # Notify other clients
-    sse.publish('new_image')
+    RedisWrapper.publish('new_image')
 
     return FileManager.photo_to_client(photo.json()), 201

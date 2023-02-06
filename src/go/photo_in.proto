@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package photobook;
+option go_package = "github.com/fabrizio2210/photobook";
+
+message PhotoIn {
+  optional string author_id = 1;
+  optional bytes photo = 2;
+}

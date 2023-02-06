@@ -1,11 +1,12 @@
 from flask import Flask, Response
 from flask_restful import Api
 from flask_cors import CORS
-from flask_sse import sse
+#from flask_sse import sse
 import logging
 import os
 
 from db import db
+from redis_wrapper import RedisWrapper
 from resources.photo import Photo, NewPhoto, PhotoList
 from resources.uid import Uid
 from utility.networking import get_my_ip
@@ -19,7 +20,7 @@ if __name__ == '__main__' or os.getenv('DEBUG', 0) == '1':
 app = Flask(__name__)
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['REDIS_URL'] = os.getenv('REDIS_URL','redis://localhost')
-app.register_blueprint(sse, url_prefix='/api/events')
+#app.register_blueprint(sse, url_prefix='/api/events')
 api = Api(app)
 
 # API
@@ -32,6 +33,7 @@ api.add_resource(Uid,     '/api/uid')
 db.set_db_url(os.getenv('DB_URL', 'mongodb://root:develop@mongo:27017/'))
 db.set_db_name(os.getenv('DB_NAME', 'photobook'))
 FileManager.set_upload_folder(os.getenv('STATIC_FILES_PATH', '/tmp'))
+RedisWrapper.init(url=os.getenv('REDIS_URL', 'redis://localhost'))
 
 # Initialise data
 bootstrap(force=False)
