@@ -134,6 +134,21 @@ services:
     networks:
       - backends
 
+  sse:
+    image: fabrizio2210/photobook-sse-dev
+    labels: 
+        traefik.port: 80
+        traefik.enable: "true"
+        traefik.frontendstatic.rule: "PathPrefix(`/api/events`)"
+        traefik.http.services.frontendstatic-service.loadbalancer.server.port: 80
+        traefik.http.routers.frontendstatic.rule: "PathPrefix(`/api/events`)"
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - ../../src/go/sse:/usr/src/app
+    networks:
+      - backends
+
 volumes:
   static_files:
 
