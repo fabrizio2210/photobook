@@ -177,7 +177,4 @@ class NewPhoto(Resource):
                                 )
                               )
 
-    # Notify other clients
-    RedisWrapper.publish('new_image')
-
     return FileManager.photo_to_client(photo.json()), 201

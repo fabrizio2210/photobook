@@ -73,5 +73,9 @@ func main() {
 	// fmt.Println("IsNudity:", isNudity(photo_in.Photo))
         db.AcceptPhoto(photo_in)
         //db.DiscardPhoto(photo_in)
+        // Notify all the clients.
+        if err := redisClient.Publish(ctx, "sse", "new_image").Err(); err != nil {
+            panic(err)
+        }
     }
 }
