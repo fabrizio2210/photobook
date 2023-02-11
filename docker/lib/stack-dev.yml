@@ -139,9 +139,9 @@ services:
     labels: 
         traefik.port: 80
         traefik.enable: "true"
-        traefik.frontendstatic.rule: "PathPrefix(`/api/events`)"
-        traefik.http.services.frontendstatic-service.loadbalancer.server.port: 80
-        traefik.http.routers.frontendstatic.rule: "PathPrefix(`/api/events`)"
+        traefik.sse.rule: "PathPrefix(`/api/events`)"
+        traefik.http.services.sse-service.loadbalancer.server.port: 3000
+        traefik.http.routers.sse.rule: "PathPrefix(`/api/events`)"
     environment:
       REDIS_HOST: redis
     volumes:
