@@ -43,7 +43,7 @@ class Photo(Resource):
         FileManager.delete_photo(photo[0].id)
         photo[0].delete_from_db()
         # Notify other clients
-        #sse.publish('deleted ' + str(photo[0].id))
+        RedisWrapper.publish('deleted ' + str(photo[0].id))
         return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
@@ -71,7 +71,6 @@ class Photo(Resource):
         photo[0].save_to_db()
         # Notify other clients
         RedisWrapper.publish('changed ' + str(photo[0].id))
-        #sse.publish('changed ' + str(photo[0].id))
       else:
         return {'message': 'Not authorized'}, 403
     else:

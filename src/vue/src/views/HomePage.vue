@@ -57,17 +57,20 @@ export default {
       this.$store.dispatch("photos/get", { id });
     },
     handleEvents(msg) {
+    console.log("SSE:", msg);
       if (msg == "new_image") {
         this.populatePhotos(this.$store.state.photos.last_timestamp);
         return;
       }
       if (msg.startsWith("deleted")) {
         const id = msg.split(" ")[1];
+        console.log("Received to delete:", id);
         this.$store.dispatch("photos/get", { id });
         return;
       }
       if (msg.startsWith("changed")) {
         const id = msg.split(" ")[1];
+        console.log("Received to update:", id);
         this.$store.dispatch("photos/get", { id });
         return;
       }
