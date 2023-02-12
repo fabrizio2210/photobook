@@ -81,7 +81,7 @@ func main() {
         db.AcceptPhoto(photo_in)
         //db.DiscardPhoto(photo_in)
         // Notify all the clients.
-        if err := redisClient.Publish(ctx, "sse", "new_image").Err(); err != nil {
+        if err := redisClient.Publish(ctx, "sse", "new_image " + *photo_in.Id).Err(); err != nil {
             panic(err)
         }
     }

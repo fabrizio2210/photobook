@@ -123,10 +123,15 @@ export const photos = {
     },
     getSuccess(state, photo) {
       if (state.all.photos_list.length > 0) {
+        var found = false;
         for (var i = 0; i < state.all.photos_list.length; i++) {
           if (state.all.photos_list[i].id == photo.id) {
             state.all.photos_list[i] = photo;
+            found = true;
           }
+        }
+        if (!found) {
+          state.all.photos_list.unshift(photo);
         }
       } else {
         var photos_list = [photo];
