@@ -3,13 +3,15 @@ package main
 
 import (
     "context"
+    "db"
     "encoding/json"
     "fmt"
     "os"
     "bytes"
+    "math/rand"
     "net/http"
     "io/ioutil"
-    "db"
+    "time"
 
     "github.com/go-redis/redis/v8"
     "github.com/golang/protobuf/proto"
@@ -43,7 +45,6 @@ func isNudity(payload []byte) bool{
   }
   body, err := ioutil.ReadAll(res.Body)
 
-  fmt.Println(string(body))
   var nudity_response NudityResponse
   if err := json.Unmarshal(body, &nudity_response); err != nil {
       panic(err)
@@ -55,6 +56,7 @@ func isNudity(payload []byte) bool{
 func main() {
     fmt.Println("NUDITY_APILAYER_KEY:", os.Getenv("NUDITY_APILAYER_KEY"))
 
+    rand.Seed(time.Now().UnixNano())
 
     for {
         msg, err := redisClient.BLPop(ctx, 0, "in_photos").Result()
@@ -70,7 +72,12 @@ func main() {
 	}
 	fmt.Printf("Author: %s\n", *photo_in.AuthorId)
         fmt.Printf("Photo length: %+v\n", len(photo_in.Photo))
+
+        // Insted of using the API, emulate it with a sleep.
 	// fmt.Println("IsNudity:", isNudity(photo_in.Photo))
+        n := rand.Intn(7)
+        time.Sleep(time.Duration(n)*time.Second)
+
         db.AcceptPhoto(photo_in)
         //db.DiscardPhoto(photo_in)
         // Notify all the clients.
