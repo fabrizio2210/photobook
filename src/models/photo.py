@@ -3,7 +3,7 @@ import logging
 
 
 class PhotoModel(db.Model):
-  __tablename__ = "photos"
+  __tablename__ = "events"
 
   def __init__(self, **kwargs):
     for arg in kwargs.keys():

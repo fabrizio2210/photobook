@@ -13,7 +13,7 @@ import (
 )
 
 func AcceptPhoto(photo_in *photopb.PhotoIn){
-  insertPhoto(photo_in, "photos")
+  insertPhoto(photo_in, "events")
 }
 
 func DiscardPhoto(photo_in *photopb.PhotoIn){
