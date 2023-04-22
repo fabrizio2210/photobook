@@ -9,12 +9,12 @@
       <div
         class="photo-element"
         v-for="photo in photos.photos_list"
-        :key="photo.id"
+        :key="photo.photo_id"
       >
         <img
           class="photo-img-element"
           loading="lazy"
-          @error="imgError(photo.id)"
+          @error="imgError(photo.photo_id)"
           :src="photo.location"
         />
         <div class="photo-description">{{ photo.description }}</div>
