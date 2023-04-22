@@ -4,7 +4,7 @@ import io
 import os
 import werkzeug
 import logging
-import go.photo_in_pb2
+import go.proto.photo_in_pb2
 from flask_restful import Resource, reqparse
 from models.photo import PhotoModel
 from redis import Redis
@@ -166,7 +166,7 @@ class NewPhoto(Resource):
       image.save(output, format="JPEG")
       logging.info("Author_id:%s" % data['author_id'])
       RedisWrapper.enque_photo(
-                                go.photo_in_pb2.PhotoIn(
+                                go.proto.photo_in_pb2.PhotoIn(
                                   id=photo.id,
                                   photo=output.getvalue(),
                                   description=photo.description,

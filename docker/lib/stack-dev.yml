@@ -130,7 +130,7 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
     volumes:
-      - ../../src/go:/usr/src/app
+      - ../../src/go/worker:/usr/src/app
     networks:
       - backends
 
