@@ -2,15 +2,15 @@
 
 ## Frontend API
 
-### /web/upload
+### /upload
 
 Where the user can upload a photo with description and name
 
-### /web/edit
+### /edit
 
 Where the user can edit or delete own photos
 
-### /web/show
+### /
 
 Where the user can see all the photos
 
@@ -18,22 +18,28 @@ Where the user can see all the photos
 
 # Static
 
+## Get photo
+
 ### /static/photosXXX.img GET
+
 
 # Backend API
 
 ## Upload or Edit photo
 
-### /api/photo PUT/DELETE
+### /api/photo/<uuid> GET/PUT/DELETE
+
 
 ## Identification
 
-### /api/id GET
+### /api/uid GET
+
 
 ## Show
 
 ### /api/photos GET (select by timestamp)
 
+
 ## Notification
 
-### /api/notification
+### /api/events
