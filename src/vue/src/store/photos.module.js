@@ -15,6 +15,25 @@ function removePhotoFromList(list, photo) {
   }
 }
 
+function mergeEvents(current_list, in_list) {
+  const photos_to_insert = []
+  const photos_to_delete = []
+  for (const photo of in_list.slice().reverse()) {
+    if (photo.event != "deletion") {
+      photos_to_insert.push(photo);
+    } else {
+      photos_to_delete.push(photo);
+    }
+  }
+  for (const photo of photos_to_delete) {
+    removePhotoFromList(current_list, photo);
+    removePhotoFromList(photos_to_insert, photo);
+  }
+  for (const photo of photos_to_insert) {
+    current_list.push(photo);
+  }
+}
+
 export const photos = {
   namespaced: true,
   state: {
@@ -79,22 +98,7 @@ export const photos = {
       state.all.loading = true;
     },
     getSinceSuccess(state, photos) {
-      const photos_to_insert = []
-      const photos_to_delete = []
-      for (const photo of photos.slice().reverse()) {
-        if (photo.event != "deletion") {
-          photos_to_insert.push(photo);
-        } else {
-          photos_to_delete.push(photo);
-        }
-      }
-      for (const photo of photos_to_delete) {
-        removePhotoFromList(state.all.photos_list, photo);
-        removePhotoFromList(photos_to_insert, photo);
-      }
-      for (const photo of photos_to_insert) {
-        state.all.photos_list.push(photo);
-      }
+      mergeEvents(state.all.photos_list, photos);
       if (state.all.photos_list.length > 0) {
         state.last_timestamp = state.all.photos_list[0].timestamp;
       }
@@ -104,26 +108,30 @@ export const photos = {
       state.all.loading = true;
     },
     getSuccess(state, photo) {
-      if (state.all.photos_list.length > 0) {
-        var found = false;
-        for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].photo_id == photo.photo_id) {
-            state.all.photos_list[i] = photo;
-            found = true;
+      if (photo.event != "deletion") {
+        if (state.all.photos_list.length > 0) {
+          var found = false;
+          for (var i = 0; i < state.all.photos_list.length; i++) {
+            if (state.all.photos_list[i].photo_id == photo.photo_id) {
+              state.all.photos_list[i] = photo;
+              found = true;
+            }
           }
-        }
-        if (!found) {
-          state.all.photos_list.unshift(photo);
+          if (!found) {
+            state.all.photos_list.unshift(photo);
+          }
+        } else {
+          var photos_list = [photo];
+          state.all = { photos_list };
         }
       } else {
-        var photos_list = [photo];
-        state.all = { photos_list };
+        removePhotoFromList(state.all.photos_list, photo);
       }
+        
       Vue.delete(state.all, "loading");
     },
     getOwnSuccess(state, photos) {
-      const photos_list = photos.slice().reverse();
-      state.my = { photos_list };
+      mergeEvents(state.my.photos_list, photos);
       Vue.delete(state.all, "loading");
     },
     deleteSuccess(state, photo) {
@@ -209,7 +217,7 @@ export const photos = {
     getFailure(state, error) {
       if (error.error == "Item not found.") {
         for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].photo_id == error.photo_id) {
+          if (state.all.photos_list[i].photo_id == error.id) {
             state.all.photos_list.splice(i, 1);
           }
         }
