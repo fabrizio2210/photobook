@@ -40,10 +40,20 @@ class Photo(Resource):
     photo = PhotoModel.find_by_id(id)
     if photo:
       if photo[0].author_id == data.get('author_id', None):
-        FileManager.delete_photo(photo[0].id)
+        FileManager.delete_photo(photo[0].photo_id)
+        new_photo = PhotoModel(id=str(uuid.uuid4()),
+                           event="deletion",
+                           photo_id=photo[0].photo_id,
+                           description=photo[0].description,
+                           author=photo[0].author,
+                           author_id=photo[0].author_id,
+                           order=photo[0].order,
+                           timestamp=RedisWrapper.get_counter("events_count"))
+
+        new_photo.save_to_db()
         photo[0].delete_from_db()
         # Notify other clients
-        RedisWrapper.publish('deleted ' + str(photo[0].id))
+        RedisWrapper.publish('deleted ' + str(photo[0].photo_id))
         return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
@@ -68,9 +78,20 @@ class Photo(Resource):
           photo[0].description = data.get('description')
         if data.get('author') is not None:
           photo[0].author = data.get('author')
-        photo[0].save_to_db()
+
+        new_photo = PhotoModel(id=str(uuid.uuid4()),
+                           photo_id=photo[0].photo_id,
+                           event="edit",
+                           description=photo[0].description,
+                           author=photo[0].author,
+                           author_id=photo[0].author_id,
+                           order=photo[0].order,
+                           timestamp=RedisWrapper.get_counter("events_count"))
+
+        new_photo.save_to_db()
+        photo[0].delete_from_db()
         # Notify other clients
-        RedisWrapper.publish('changed ' + str(photo[0].id))
+        RedisWrapper.publish('changed ' + str(photo[0].photo_id))
       else:
         return {'message': 'Not authorized'}, 403
     else:
@@ -99,7 +120,7 @@ class PhotoList(Resource):
              }
     if data.get('timestamp', None):
       return {'photos': list(map(lambda x: 
-                             FileManager.photo_to_client(x.json()),
+                             FileManager.photo_to_client(x.public_json()),
                              PhotoModel.find_by_timestamp(data['timestamp'])
                          ))
              }
@@ -142,24 +163,27 @@ class NewPhoto(Resource):
     if not FileManager.allowed_file(image_file.filename):
       return {"message": "File name extension not allowed."}, 401
 
-    # Create a new photo in DB
+    # Create a new photo structure, but not saving in DB
     photo = PhotoModel(id=str(uuid.uuid4()),
                        description=data.get('description', ''),
+                       event='creation',
+                       photo_id=str(uuid.uuid4()),
                        author=data.get('author', ''),
                        author_id=str(data['author_id']),
-                       timestamp=int(time.time()*1000))
+                       order=RedisWrapper.get_counter("photos_count"),
+                       timestamp=RedisWrapper.get_counter("events_count"))
 
     # Image processing
     image = Image.open(image_file)
     image = ImageOps.exif_transpose(image)
 
     # Save full quality photo
-    image.save(FileManager.path_to_full_quality_folder(photo.id))
+    image.save(FileManager.path_to_full_quality_folder(photo.photo_id))
 
     image.thumbnail((900,600))
 
     # Save photo on filesystem
-    image.save(FileManager.path_to_upload_folder(photo.id))
+    image.save(FileManager.path_to_upload_folder(photo.photo_id))
 
     # Enque photo to check
     with io.BytesIO() as output:
@@ -168,11 +192,13 @@ class NewPhoto(Resource):
       RedisWrapper.enque_photo(
                                 go.proto.photo_in_pb2.PhotoIn(
                                   id=photo.id,
+                                  photo_id=photo.photo_id,
                                   photo=output.getvalue(),
                                   description=photo.description,
                                   author_id=photo.author_id,
                                   author=photo.author,
-                                  timestamp=photo.timestamp
+                                  timestamp=photo.timestamp,
+                                  order=photo.order
                                 )
                               )
 

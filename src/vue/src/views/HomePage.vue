@@ -47,11 +47,7 @@ export default {
   },
   methods: {
     populatePhotos(last_timestamp) {
-      if (typeof last_timestamp !== "undefined") {
-        this.$store.dispatch("photos/getSince", { last_timestamp });
-      } else {
-        this.$store.dispatch("photos/getAll");
-      }
+      this.$store.dispatch("photos/getSince", { last_timestamp });
     },
     imgError(id) {
       this.$store.dispatch("photos/get", { id });

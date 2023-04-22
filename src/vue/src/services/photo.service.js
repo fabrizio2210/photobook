@@ -7,20 +7,9 @@ export const photoService = {
   get,
   getSince,
   getOwn,
-  getAll,
   put,
   del
 };
-
-function getAll() {
-  const requestOptions = {
-    method: "GET"
-  };
-
-  return fetch(`${config.apiUrl}/api/events`, requestOptions).then(
-    handleResponse
-  );
-}
 
 function get(id) {
   const requestOptions = {
@@ -68,7 +57,7 @@ function create(photoname) {
 }
 
 function put(uid, photo) {
-  var url = new URL(`/api/photo/${photo.id}`, config.apiUrl);
+  var url = new URL(`/api/photo/${photo.photo_id}`, config.apiUrl);
   const params = {
     author_id: uid
   };

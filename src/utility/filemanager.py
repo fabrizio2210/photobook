@@ -64,8 +64,11 @@ class FileManager():
     return {
       'author': photo['author'],
       'description': photo['description'],
+      'event': photo['event'],
+      'order': photo['order'],
       'id': photo['id'],
-      'location': cls.static_path_url + cls.get_file_name(photo['id']),
+      'photo_id': photo['photo_id'],
+      'location': cls.static_path_url + cls.get_file_name(photo['photo_id']),
       'timestamp': photo['timestamp']
       }
 

@@ -33,10 +33,13 @@ func insertPhoto(photo_in *photopb.PhotoIn, collection_name string) {
   id, err := collection.InsertOne(ctx,
                                   bson.D{
                                           {"id", photo_in.Id},
+                                          {"photo_id", photo_in.PhotoId},
+                                          {"order", photo_in.Order},
                                           {"author_id", photo_in.AuthorId},
-					  {"author", photo_in.Author},
-					  {"timestamp", photo_in.Timestamp},
-					  {"description", photo_in.Description},
+                                          {"author", photo_in.Author},
+                                          {"timestamp", photo_in.Timestamp},
+                                          {"description", photo_in.Description},
+                                          {"event", "creation"},
                                         })
   if  err != nil {
     panic(err)

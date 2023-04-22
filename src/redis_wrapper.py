@@ -15,3 +15,7 @@ class RedisWrapper():
   @classmethod
   def enque_photo(cls, photo_pb):
     cls.client.lpush('in_photos', photo_pb.SerializeToString())
+
+  @classmethod
+  def get_counter(cls, counter):
+    return cls.client.incr(counter)

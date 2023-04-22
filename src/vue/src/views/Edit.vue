@@ -9,13 +9,13 @@
       <div
         class="photo-row"
         v-for="photo in photos.photos_list"
-        :key="photo.id"
+        :key="photo.photo_id"
       >
         <div class="btn-container">
           <button
             class="photo-col-btn btn-delete"
             v-show="!photo.edit"
-            @click.prevent="deletePhoto(photo.id)"
+            @click.prevent="deletePhoto(photo.photo_id)"
           >
             Delete
           </button>
@@ -24,7 +24,7 @@
           <button
             class="photo-col-btn btn-edit"
             v-show="!photo.edit"
-            @click.prevent="editPhoto(photo.id)"
+            @click.prevent="editPhoto(photo.photo_id)"
           >
             Edit
           </button>
@@ -58,12 +58,12 @@
                 >Name:
                 <input type="text" class="form-author" v-model="photo.author" />
               </label>
-              <button class="btn-delete" @click.prevent="uneditPhoto(photo.id)">
+              <button class="btn-delete" @click.prevent="uneditPhoto(photo.photo_id)">
                 Cancel
               </button>
               <button
                 class="btn-ok"
-                @click.prevent="confirmEditPhoto(photo.id)"
+                @click.prevent="confirmEditPhoto(photo.photo_id)"
               >
                 OK
               </button>
@@ -112,7 +112,7 @@ export default {
       const photos = this.photos.photos_list;
       var photo;
       for (var i = 0; i < photos.length; i++) {
-        if (photos[i].id == id) {
+        if (photos[i].photo_id == id) {
           photo = photos[i];
         }
       }

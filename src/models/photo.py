@@ -4,6 +4,7 @@ import logging
 
 class PhotoModel(db.Model):
   __tablename__ = "events"
+  __sort__ = ("order", 1)
 
   def __init__(self, **kwargs):
     for arg in kwargs.keys():
@@ -12,7 +13,10 @@ class PhotoModel(db.Model):
   def public_json(self):
     return {'id': self.id,
             'description': self.description,
+            'photo_id': self.photo_id,
+            'order': self.order,
             'author': self.author,
+            'event': self.event,
             'timestamp': self.timestamp}
 
   def save_to_db(self):
@@ -31,8 +35,8 @@ class PhotoModel(db.Model):
     return cls.find()
 
   @classmethod
-  def find_by_id(cls, id):
-    return cls.find(id=id)
+  def find_by_id(cls, photo_id):
+    return cls.find(photo_id=photo_id)
 
   @classmethod
   def find_by_timestamp(cls, timestamp):

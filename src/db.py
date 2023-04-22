@@ -90,6 +90,8 @@ class db():
       logging.debug("====== Start Query ======")
       logging.debug("Find query: %s", kwargs)
       cursor = table.find(kwargs)
+      if cls.__sort__:
+        cursor.sort(*cls.__sort__)
       rows = list(cursor)
       logging.debug("In the function: %s", rows)
       logging.debug("======== End Query ======")
@@ -111,6 +113,8 @@ class db():
         query[arg] = { "$gt": kwargs[arg] }
       logging.debug("Find gt actual query: %s", query)
       cursor = table.find(query)
+      if cls.__sort__:
+        cursor.sort(*cls.__sort__)
       logging.debug("======== End Query ======")
       attrs = cls.get_class_attrs()
       attrs.sort()

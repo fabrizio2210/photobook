@@ -1,6 +1,19 @@
 import { photoService } from "../services";
 import Vue from "vue";
-import router from "../router/";
+
+function removePhotoFromList(list, photo) {
+  var found = false;
+  for (var index in list) {
+    if (list[index].photo_id == photo.photo_id) {
+      found = true;
+      break;
+    }
+  }
+  if (found) {
+    console.log("Deleting from list=>", photo);
+    list.splice(index);
+  }
+}
 
 export const photos = {
   namespaced: true,
@@ -22,14 +35,6 @@ export const photos = {
     },
     unedit({ commit }, { id }) {
       commit("unedit", id);
-    },
-    getAll({ commit }) {
-      commit("getAllRequest");
-
-      photoService.getAll().then(
-        photos => commit("getAllSuccess", photos["photos"]),
-        error => commit("getAllFailure", error)
-      );
     },
     getSince({ commit }, { last_timestamp }) {
       commit("getSinceRequest");
@@ -64,9 +69,6 @@ export const photos = {
     }
   },
   mutations: {
-    getAllRequest(state) {
-      state.all = { loading: true };
-    },
     getRequest(state) {
       state.all.loading = true;
     },
@@ -76,16 +78,23 @@ export const photos = {
     deleteRequest(state) {
       state.all.loading = true;
     },
-    getAllSuccess(state, photos) {
-      const photos_list = photos.slice().reverse();
-      Vue.set(state, "last_timestamp", photos_list[0].timestamp);
-      state.all = { photos_list };
-    },
     getSinceSuccess(state, photos) {
-      state.all.photos_list = photos
-        .slice()
-        .reverse()
-        .concat(state.all.photos_list);
+      const photos_to_insert = []
+      const photos_to_delete = []
+      for (const photo of photos.slice().reverse()) {
+        if (photo.event != "deletion") {
+          photos_to_insert.push(photo);
+        } else {
+          photos_to_delete.push(photo);
+        }
+      }
+      for (const photo of photos_to_delete) {
+        removePhotoFromList(state.all.photos_list, photo);
+        removePhotoFromList(photos_to_insert, photo);
+      }
+      for (const photo of photos_to_insert) {
+        state.all.photos_list.push(photo);
+      }
       if (state.all.photos_list.length > 0) {
         state.last_timestamp = state.all.photos_list[0].timestamp;
       }
@@ -98,7 +107,7 @@ export const photos = {
       if (state.all.photos_list.length > 0) {
         var found = false;
         for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].id == photo.id) {
+          if (state.all.photos_list[i].photo_id == photo.photo_id) {
             state.all.photos_list[i] = photo;
             found = true;
           }
@@ -120,14 +129,14 @@ export const photos = {
     deleteSuccess(state, photo) {
       if (typeof state.all.photos_list !== "undefined") {
         for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].id == photo.id) {
+          if (state.all.photos_list[i].photo_id == photo.photo_id) {
             state.all.photos_list.splice(i, 1);
           }
         }
       }
       if (typeof state.my.photos_list !== "undefined") {
         for (i = 0; i < state.my.photos_list.length; i++) {
-          if (state.my.photos_list[i].id == photo.id) {
+          if (state.my.photos_list[i].photo_id == photo.photo_id) {
             state.my.photos_list.splice(i, 1);
           }
         }
@@ -136,7 +145,7 @@ export const photos = {
     },
     prepareEdit(state, id) {
       for (var i = 0; i < state.my.photos_list.length; i++) {
-        if (state.my.photos_list[i].id == id) {
+        if (state.my.photos_list[i].photo_id == id) {
           Vue.set(state.my.photos_list[i], "edit", true);
           Vue.set(
             state.my.photos_list[i],
@@ -153,7 +162,7 @@ export const photos = {
     },
     editSuccess(state, photo) {
       for (var i = 0; i < state.my.photos_list.length; i++) {
-        if (state.my.photos_list[i].id == photo.id) {
+        if (state.my.photos_list[i].photo_id == photo.photo_id) {
           Vue.set(state.my.photos_list, i, photo);
         }
       }
@@ -162,7 +171,7 @@ export const photos = {
         state.all.photos_list.length > 0
       ) {
         for (i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].id == photo.id) {
+          if (state.all.photos_list[i].photo_id == photo.photo_id) {
             state.all.photos_list[i] = photo;
           }
         }
@@ -173,7 +182,7 @@ export const photos = {
     },
     unedit(state, id) {
       for (var i = 0; i < state.my.photos_list.length; i++) {
-        if (state.my.photos_list[i].id == id) {
+        if (state.my.photos_list[i].photo_id == id) {
           Vue.set(state.my.photos_list[i], "edit", false);
           Vue.set(
             state.my.photos_list[i],
@@ -188,19 +197,19 @@ export const photos = {
         }
       }
     },
-    getAllFailure(state, error) {
-      state.all = { error };
-    },
     getSinceFailure(state, error) {
       state.all = { error };
     },
     getOwnFailure(state, error) {
       state.all = { error };
     },
+    editFailure(state, error) {
+      state.all = { error };
+    },
     getFailure(state, error) {
       if (error.error == "Item not found.") {
         for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].id == error.id) {
+          if (state.all.photos_list[i].photo_id == error.photo_id) {
             state.all.photos_list.splice(i, 1);
           }
         }

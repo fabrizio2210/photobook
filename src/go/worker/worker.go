@@ -66,11 +66,12 @@ func main() {
 
         fmt.Printf("Received message from: %+v\n", msg[0])
         
-	photo_in := &photopb.PhotoIn{}
-	if err := proto.Unmarshal([]byte(msg[1]), photo_in); err != nil {
-	    panic(err)
-	}
-	fmt.Printf("Author: %s\n", *photo_in.AuthorId)
+        photo_in := &photopb.PhotoIn{}
+        if err := proto.Unmarshal([]byte(msg[1]), photo_in); err != nil {
+            panic(err)
+        }
+        fmt.Printf("Author: %s\n", *photo_in.AuthorId)
+        fmt.Printf("Order: %s\n", *photo_in.Order)
         fmt.Printf("Photo length: %+v\n", len(photo_in.Photo))
 
         // Insted of using the API, emulate it with a sleep.
@@ -81,7 +82,7 @@ func main() {
         db.AcceptPhoto(photo_in)
         //db.DiscardPhoto(photo_in)
         // Notify all the clients.
-        if err := redisClient.Publish(ctx, "sse", "new_image " + *photo_in.Id).Err(); err != nil {
+        if err := redisClient.Publish(ctx, "sse", "new_image " + *photo_in.PhotoId).Err(); err != nil {
             panic(err)
         }
     }
