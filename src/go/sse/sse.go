@@ -22,7 +22,7 @@ var redisClient = redis.NewClient(&redis.Options{
 func main() {
   s := sse.NewServer(nil)
   defer s.Shutdown()
-  http.Handle("/api/events", s)
+  http.Handle("/api/notifications", s)
   go func() {
     subscriber := redisClient.Subscribe(ctx, "sse")
     for {
@@ -31,7 +31,7 @@ func main() {
       if err != nil {
         panic(err)
       }
-      s.SendMessage("/api/events", sse.SimpleMessage(msg.Payload))
+      s.SendMessage("/api/notifications", sse.SimpleMessage(msg.Payload))
     }
   }()
   log.Println("Listening at :3000")

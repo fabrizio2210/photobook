@@ -17,7 +17,7 @@ function getAll() {
     method: "GET"
   };
 
-  return fetch(`${config.apiUrl}/api/photos`, requestOptions).then(
+  return fetch(`${config.apiUrl}/api/events`, requestOptions).then(
     handleResponse
   );
 }
@@ -33,7 +33,7 @@ function get(id) {
 }
 
 function getSince(timestamp) {
-  var url = new URL(`/api/photos`, config.apiUrl);
+  var url = new URL(`/api/events`, config.apiUrl);
   const params = {
     timestamp: timestamp
   };
@@ -45,7 +45,7 @@ function getSince(timestamp) {
 }
 
 function getOwn(uid) {
-  var url = new URL(`/api/photos`, config.apiUrl);
+  var url = new URL(`/api/events`, config.apiUrl);
   const params = {
     author_id: uid
   };

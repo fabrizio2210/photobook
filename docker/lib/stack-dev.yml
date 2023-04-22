@@ -139,9 +139,9 @@ services:
     labels: 
         traefik.port: 80
         traefik.enable: "true"
-        traefik.sse.rule: "PathPrefix(`/api/events`)"
+        traefik.sse.rule: "PathPrefix(`/api/notifications`)"
         traefik.http.services.sse-service.loadbalancer.server.port: 3000
-        traefik.http.routers.sse.rule: "PathPrefix(`/api/events`)"
+        traefik.http.routers.sse.rule: "PathPrefix(`/api/notifications`)"
     environment:
       REDIS_HOST: redis
     volumes:

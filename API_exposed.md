@@ -37,9 +37,9 @@ Where the user can see all the photos
 
 ## Show
 
-### /api/photos GET (select by timestamp)
+### /api/events GET (select by timestamp)
 
 
 ## Notification
 
-### /api/events
+### /api/notifications

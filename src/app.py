@@ -25,7 +25,7 @@ api = Api(app)
 
 # API
 api.add_resource(Photo,     '/api/photo/<uuid:id>')
-api.add_resource(PhotoList,     '/api/photos')
+api.add_resource(PhotoList,     '/api/events')
 api.add_resource(NewPhoto,     '/api/new_photo')
 api.add_resource(Uid,     '/api/uid')
 

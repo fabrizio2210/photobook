@@ -75,7 +75,7 @@ export default {
     this.populatePhotos(this.$store.state.photos.last_timestamp);
     this.vueInsomnia().on();
     this.$sse
-      .create("/api/events")
+      .create("/api/notifications")
       .on("message", msg => this.handleEvents(msg))
       .on("error", err =>
         console.error("Failed to parse or lost connection:", err)
