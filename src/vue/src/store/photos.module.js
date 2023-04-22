@@ -11,22 +11,6 @@ export const photos = {
     status: {}
   },
   actions: {
-    creating({ dispatch, commit }, { photoname }) {
-      commit("creatingRequest", {});
-      photoService.create(photoname).then(
-        photo => {
-          commit("creatingSuccess", photo);
-          router.push({
-            name: "PhotoSettings",
-            params: { photo_id: photo.id }
-          });
-        },
-        error => {
-          commit("creatingFailure", error);
-          dispatch("alert/error", error, { root: true });
-        }
-      );
-    },
     prepareEdit({ commit }, { id }) {
       commit("prepareEdit", id);
     },
@@ -80,17 +64,6 @@ export const photos = {
     }
   },
   mutations: {
-    creatingRequest(state) {
-      state.status = { creating: true };
-    },
-    creatingSuccess(state, photo) {
-      state.status = { created: true };
-      state.all.photos_list.push(photo);
-    },
-    creatingFailure(state) {
-      state.status = {};
-      state.user = null;
-    },
     getAllRequest(state) {
       state.all = { loading: true };
     },
