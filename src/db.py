@@ -67,6 +67,8 @@ class db():
       attrs = self.get_attrs()
       jsn = {}
       for a in attrs:
+        if a[0].startswith('_'):
+          continue
         jsn[a[0]] = a[1]
       return jsn
 

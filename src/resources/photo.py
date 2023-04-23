@@ -62,7 +62,7 @@ class Photo(Resource):
     id = str(id)
     photo = PhotoModel.find_by_id(id)
     if photo:
-      return {'photo': FileManager.photo_to_client(photo[0].json())}, 200
+      return {'photo': FileManager.photo_to_client(photo[0].public_json())}, 200
     return {'message': 'Item not found.'}, 404
 
   def put(self, id):
