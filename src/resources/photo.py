@@ -109,11 +109,6 @@ class Photo(Resource):
 
 class PhotoList(Resource):
   parser = reqparse.RequestParser()
-  parser.add_argument('timestamp',
-                      type=int,
-                      required=False,
-                      help="If timestamp is provided, get latest photos after timestamp."
-                      )
   parser.add_argument('author_id',
                       type=str,
                       required=False,
@@ -126,12 +121,6 @@ class PhotoList(Resource):
                              FileManager.photo_to_client(x.json()),
                              PhotoModel.get_photos_by_author_id(data['author_id'])
                              ))
-             }
-    if data.get('timestamp', None):
-      return {'photos': list(map(lambda x: 
-                             FileManager.photo_to_client(x.public_json()),
-                             PhotoModel.find_by_timestamp(data['timestamp'])
-                         ))
              }
     logging.debug("In the resources: %s", PhotoModel.get_all_photos())
     return {'photos': list(map(lambda x: 
