@@ -54,7 +54,11 @@ class Photo(Resource):
         new_photo.save_to_db()
         photo[0].delete_from_db()
         # Notify other clients
-        RedisWrapper.publish(json.dumps(new_photo.public_json()))
+        RedisWrapper.publish(json.dumps(
+          FileManager.photo_to_client(
+            new_photo.public_json()
+          ))
+        )
         return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
@@ -92,7 +96,11 @@ class Photo(Resource):
         new_photo.save_to_db()
         photo[0].delete_from_db()
         # Notify other clients
-        RedisWrapper.publish('changed ' + str(photo[0].photo_id))
+        RedisWrapper.publish(json.dumps(
+          FileManager.photo_to_client(
+            new_photo.public_json()
+          ))
+        )
       else:
         return {'message': 'Not authorized'}, 403
     else:

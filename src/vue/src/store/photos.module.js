@@ -10,8 +10,10 @@ function removePhotoFromList(list, photo) {
     }
   }
   if (found) {
-    console.log("Deleting from list=>", photo);
-    list.splice(index);
+    if (photo.timestamp > list[index].timestamp) {
+      console.log("Deleting from list=>", photo);
+      list.splice(index);
+    }
   }
 }
 
@@ -30,7 +32,20 @@ function mergeEvents(current_list, in_list) {
     removePhotoFromList(photos_to_insert, photo);
   }
   for (const photo of photos_to_insert) {
-    current_list.unshift(photo);
+    var found = false;
+    for (var i = 0; i < current_list.length; i++) {
+      if (current_list[i].photo_id == photo.photo_id) {
+        console.log("Found to substitute=>", current_list[i]);
+        if (photo.timestamp > current_list[i].timestamp) {
+          Vue.set(current_list, i, photo);
+        }
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      current_list.unshift(photo);
+    }
   }
 }
 
