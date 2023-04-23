@@ -5,7 +5,7 @@ config.apiUrl = window.location.origin;
 export const photoService = {
   create,
   get,
-  getSince,
+  getAll,
   getOwn,
   put,
   del
@@ -21,16 +21,11 @@ function get(id) {
   );
 }
 
-function getSince(timestamp) {
-  var url = new URL(`/api/events`, config.apiUrl);
-  const params = {
-    timestamp: timestamp
-  };
+function getAll() {
   const requestOptions = {
     method: "GET"
   };
-  url.search = new URLSearchParams(params).toString();
-  return fetch(url, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/api/events`, requestOptions).then(handleResponse);
 }
 
 function getOwn(uid) {

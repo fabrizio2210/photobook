@@ -38,16 +38,13 @@ export default {
     photos() {
       return this.$store.state.photos.all;
     },
-    last_timestamp() {
-      return this.$store.state.photos.last_timestamp;
-    }
   },
   sse: {
     cleanup: true
   },
   methods: {
-    populatePhotos(last_timestamp) {
-      this.$store.dispatch("photos/getSince", { last_timestamp });
+    populatePhotos() {
+      this.$store.dispatch("photos/getAll");
     },
     imgError(id) {
       this.$store.dispatch("photos/get", { id });
@@ -59,7 +56,7 @@ export default {
     }
   },
   mounted() {
-    this.populatePhotos(this.$store.state.photos.last_timestamp);
+    this.populatePhotos();
     this.vueInsomnia().on();
     this.$sse
       .create("/api/notifications")

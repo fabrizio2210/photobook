@@ -12,7 +12,7 @@ function removePhotoFromList(list, photo) {
   if (found) {
     if (photo.timestamp > list[index].timestamp) {
       console.log("Deleting from list=>", photo);
-      list.splice(index);
+      list.splice(index, 1);
     }
   }
 }
@@ -54,7 +54,6 @@ export const photos = {
   state: {
     all: { photos_list: [] },
     my: { photos_list: [] },
-    last_timestamp: 0,
     status: {}
   },
   actions: {
@@ -70,11 +69,11 @@ export const photos = {
     unedit({ commit }, { id }) {
       commit("unedit", id);
     },
-    getSince({ commit }, { last_timestamp }) {
-      commit("getSinceRequest");
-      photoService.getSince(last_timestamp).then(
-        photos => commit("getSinceSuccess", photos["photos"]),
-        error => commit("getSinceFailure", error)
+    getAll({ commit } ) {
+      commit("getAllRequest");
+      photoService.getAll().then(
+        photos => commit("getAllSuccess", photos["photos"]),
+        error => commit("getAllFailure", error)
       );
     },
     get({ commit }, { id }) {
@@ -107,17 +106,14 @@ export const photos = {
     getRequest(state) {
       state.all.loading = true;
     },
-    getSinceRequest(state) {
+    getAllRequest(state) {
       state.all.loading = true;
     },
     deleteRequest(state) {
       state.all.loading = true;
     },
-    getSinceSuccess(state, photos) {
+    getAllSuccess(state, photos) {
       mergeEvents(state.all.photos_list, photos);
-      if (state.all.photos_list.length > 0) {
-        state.last_timestamp = state.all.photos_list[0].timestamp;
-      }
       Vue.delete(state.all, "loading");
     },
     getOwnRequest(state) {
@@ -225,7 +221,7 @@ export const photos = {
         }
       }
     },
-    getSinceFailure(state, error) {
+    getAllFailure(state, error) {
       state.all = { error };
     },
     getOwnFailure(state, error) {
