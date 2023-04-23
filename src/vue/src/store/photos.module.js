@@ -18,7 +18,7 @@ function removePhotoFromList(list, photo) {
 function mergeEvents(current_list, in_list) {
   const photos_to_insert = []
   const photos_to_delete = []
-  for (const photo of in_list.slice().reverse()) {
+  for (const photo of in_list.slice()) {
     if (photo.event != "deletion") {
       photos_to_insert.push(photo);
     } else {
@@ -30,7 +30,7 @@ function mergeEvents(current_list, in_list) {
     removePhotoFromList(photos_to_insert, photo);
   }
   for (const photo of photos_to_insert) {
-    current_list.push(photo);
+    current_list.unshift(photo);
   }
 }
 
@@ -57,7 +57,6 @@ export const photos = {
     },
     getSince({ commit }, { last_timestamp }) {
       commit("getSinceRequest");
-
       photoService.getSince(last_timestamp).then(
         photos => commit("getSinceSuccess", photos["photos"]),
         error => commit("getSinceFailure", error)
@@ -65,7 +64,6 @@ export const photos = {
     },
     get({ commit }, { id }) {
       commit("getRequest");
-
       photoService.get(id).then(
         photo => commit("getSuccess", photo["photo"]),
         error => commit("getFailure", { error, id })
@@ -85,6 +83,9 @@ export const photos = {
         photo => commit("deleteSuccess", photo["photo"]),
         error => commit("deleteFailure", error)
       );
+    },
+    mergeEvent({ commit }, { evento }) {
+      commit("mergePhotoEvents", [ evento ]);
     }
   },
   mutations: {
@@ -128,6 +129,10 @@ export const photos = {
         removePhotoFromList(state.all.photos_list, photo);
       }
         
+      Vue.delete(state.all, "loading");
+    },
+    mergePhotoEvents(state, events) {
+      mergeEvents(state.all.photos_list, events);
       Vue.delete(state.all, "loading");
     },
     getOwnSuccess(state, photos) {

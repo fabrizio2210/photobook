@@ -62,6 +62,10 @@ class FileManager():
   @classmethod
   def photo_to_client(cls, photo):
     photo.update({
-      'location': cls.static_path_url + cls.get_file_name(photo['photo_id']),
+      'location': cls.location_for_client(photo['photo_id']),
     })
     return photo
+
+  @classmethod
+  def location_for_client(cls, photo_id):
+    return cls.static_path_url + cls.get_file_name(photo_id)

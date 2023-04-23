@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=b'Z!github.com/fabrizio2210/photobook',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0ephoto_in.proto\x12\tphotobook\"\x90\x01\n\x07PhotoIn\x12\x11\n\tauthor_id\x18\x01 \x01(\t\x12\r\n\x05photo\x18\x02 \x01(\x0c\x12\n\n\x02id\x18\x03 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x10\n\x08photo_id\x18\x07 \x01(\t\x12\r\n\x05order\x18\x08 \x01(\x03\x42#Z!github.com/fabrizio2210/photobook'
+  serialized_pb=b'\n\x0ephoto_in.proto\x12\tphotobook\"\xa2\x01\n\x07PhotoIn\x12\x11\n\tauthor_id\x18\x01 \x01(\t\x12\r\n\x05photo\x18\x02 \x01(\x0c\x12\n\n\x02id\x18\x03 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x10\n\x08photo_id\x18\x07 \x01(\t\x12\r\n\x05order\x18\x08 \x01(\x03\x12\x10\n\x08location\x18\t \x01(\tB#Z!github.com/fabrizio2210/photobook'
 )
 
 
@@ -89,6 +89,13 @@ _PHOTOIN = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='location', full_name='photobook.PhotoIn.location', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -102,7 +109,7 @@ _PHOTOIN = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=30,
-  serialized_end=174,
+  serialized_end=192,
 )
 
 DESCRIPTOR.message_types_by_name['PhotoIn'] = _PHOTOIN

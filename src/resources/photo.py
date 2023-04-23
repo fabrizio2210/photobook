@@ -198,7 +198,10 @@ class NewPhoto(Resource):
                                   author_id=photo.author_id,
                                   author=photo.author,
                                   timestamp=photo.timestamp,
-                                  order=photo.order
+                                  order=photo.order,
+                                  location=FileManager.location_for_client(
+                                      photo.photo_id
+                                    )
                                 )
                               )
 

@@ -23,6 +23,17 @@ type NudityResponse struct {
     Description  string
 }
 
+type PhotoEvent struct {
+  Id string `json:"id"`
+  Description string `json:"description"`
+  Photo_id string `json:"photo_id"`
+  Order int64 `json:"order"`
+  Author string `json:"author"`
+  Event string `json:"event"`
+  Timestamp int64 `json:"timestamp"`
+  Location string `json:"location"`
+}
+
 var  nudity_api_url = "https://api.apilayer.com/nudity_detection/upload"
 
 var ctx = context.Background()
@@ -75,14 +86,30 @@ func main() {
         fmt.Printf("Photo length: %+v\n", len(photo_in.Photo))
 
         // Insted of using the API, emulate it with a sleep.
-	// fmt.Println("IsNudity:", isNudity(photo_in.Photo))
+        // fmt.Println("IsNudity:", isNudity(photo_in.Photo))
         n := rand.Intn(7)
         time.Sleep(time.Duration(n)*time.Second)
 
         db.AcceptPhoto(photo_in)
         //db.DiscardPhoto(photo_in)
         // Notify all the clients.
-        if err := redisClient.Publish(ctx, "sse", "new_image " + *photo_in.PhotoId).Err(); err != nil {
+        
+        encodedJson, err := json.Marshal(PhotoEvent{
+          Id: *photo_in.Id,
+          Description: *photo_in.Description,
+          Photo_id: *photo_in.PhotoId,
+          Order: *photo_in.Order,
+          Author: *photo_in.Author,
+          Event: "creation",
+          Timestamp: *photo_in.Timestamp,
+          Location: *photo_in.Location,
+          })
+        if err != nil {
+          panic(err)
+        }
+        fmt.Printf("json to send: %s\n", encodedJson)
+
+        if err := redisClient.Publish(ctx, "sse", encodedJson).Err(); err != nil {
             panic(err)
         }
     }

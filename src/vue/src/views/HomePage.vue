@@ -52,19 +52,10 @@ export default {
     imgError(id) {
       this.$store.dispatch("photos/get", { id });
     },
-    handleEvents(msg) {
-    console.log("SSE:", msg);
-      if (msg.startsWith("deleted")) {
-        const id = msg.split(" ")[1];
-        this.$store.dispatch("photos/get", { id });
-        return;
-      }
-      if (msg.startsWith("changed") || msg.startsWith("new_image")) {
-        const id = msg.split(" ")[1];
-        this.$store.dispatch("photos/get", { id });
-        return;
-      }
-      console.log("Event not known:", msg);
+    handlePhotoEvents(msg) {
+      const evento = JSON.parse(msg);
+      console.log("SSE:", evento);
+      this.$store.dispatch("photos/mergeEvent", {evento});
     }
   },
   mounted() {
@@ -72,7 +63,7 @@ export default {
     this.vueInsomnia().on();
     this.$sse
       .create("/api/notifications")
-      .on("message", msg => this.handleEvents(msg))
+      .on("photo", this.handlePhotoEvents)
       .on("error", err =>
         console.error("Failed to parse or lost connection:", err)
       )

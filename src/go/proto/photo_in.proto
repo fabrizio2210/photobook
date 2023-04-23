@@ -12,4 +12,5 @@ message PhotoIn {
   optional string description = 6;
   optional string photo_id = 7;
   optional int64 order = 8;
+  optional string location = 9;
 }
