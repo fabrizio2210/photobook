@@ -2,6 +2,7 @@ import time
 import uuid
 import io
 import os
+import json
 import werkzeug
 import logging
 import go.proto.photo_in_pb2
@@ -53,7 +54,7 @@ class Photo(Resource):
         new_photo.save_to_db()
         photo[0].delete_from_db()
         # Notify other clients
-        RedisWrapper.publish('deleted ' + str(photo[0].photo_id))
+        RedisWrapper.publish(json.dumps(new_photo.public_json()))
         return {'photo': FileManager.photo_to_client(photo[0].json())}, 201
       return {'message': 'Not authorized'}, 403
     return {'message': 'Item not found.'}, 404
