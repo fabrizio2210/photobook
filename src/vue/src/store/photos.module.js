@@ -120,26 +120,7 @@ export const photos = {
       state.all.loading = true;
     },
     getSuccess(state, photo) {
-      if (photo.event != "deletion") {
-        if (state.all.photos_list.length > 0) {
-          var found = false;
-          for (var i = 0; i < state.all.photos_list.length; i++) {
-            if (state.all.photos_list[i].photo_id == photo.photo_id) {
-              state.all.photos_list[i] = photo;
-              found = true;
-            }
-          }
-          if (!found) {
-            state.all.photos_list.unshift(photo);
-          }
-        } else {
-          var photos_list = [photo];
-          state.all = { photos_list };
-        }
-      } else {
-        removePhotoFromList(state.all.photos_list, photo);
-      }
-        
+      mergeEvents(state.all.photos_list, [photo]);
       Vue.delete(state.all, "loading");
     },
     mergePhotoEvents(state, events) {
