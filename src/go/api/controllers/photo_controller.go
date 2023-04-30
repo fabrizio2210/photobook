@@ -25,6 +25,17 @@ var eventCollection *mongo.Collection = db.GetCollection("events")
 var validate = validator.New()
 
 
+func returnEvent(c *gin.Context, event *models.PhotoEvent) {
+  c.JSON(
+    http.StatusOK,
+    responses.EventResponse{
+      Status: http.StatusOK,
+      Message: "success",
+      Data: map[string]interface{}{"event": event},
+    },
+  )
+}
+
 func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
   var photo *models.PhotoEvent
   photoId := c.Param("photoId")
@@ -42,15 +53,17 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     )
     return nil
   }
-  if c.Query("author_id") != photo.Author_id {
-    c.JSON(
-      http.StatusUnauthorized,
-      responses.EventResponse{
-        Status: http.StatusUnauthorized,
-        Message: "Not authorized",
-      },
-    )
-    return nil
+  if ctx.Value("private") == true {
+    if c.Query("author_id") != photo.Author_id {
+      c.JSON(
+        http.StatusUnauthorized,
+        responses.EventResponse{
+          Status: http.StatusUnauthorized,
+          Message: "Not authorized",
+        },
+      )
+      return nil
+    }
   }
   return photo
 }
@@ -71,16 +84,25 @@ func insertEventDBAndPublish(ctx context.Context, c *gin.Context, event *models.
     panic(err)
   }
   rediswrapper.Publish("sse", encodedEvent)
-  log.Printf("Photo edited:%v", event)
+  log.Printf("Photo edited/deleted:%v", event)
 
-  c.JSON(
-    http.StatusOK,
-    responses.EventResponse{
-      Status: http.StatusOK,
-      Message: "success",
-      Data: map[string]interface{}{"event": event},
-    },
-  )
+  returnEvent(c, event)
+}
+
+func GetPhoto() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    context.WithValue(ctx, "private", false)
+    event := maybeGetPhoto(ctx, c)
+    if event == nil {
+      // Photo not found.
+      return
+    }
+    event.Location = filemanager.LocationForClient(event.Photo_id)
+    returnEvent(c, event)
+  }
 }
 
 func DeletePhoto() gin.HandlerFunc {
@@ -88,6 +110,7 @@ func DeletePhoto() gin.HandlerFunc {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     defer cancel()
 
+    context.WithValue(ctx, "private", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
@@ -130,6 +153,7 @@ func EditPhoto() gin.HandlerFunc {
       return
     }
 
+    context.WithValue(ctx, "private", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
