@@ -1,7 +1,7 @@
 FROM golang
 
-WORKDIR /usr/src/app/worker
+WORKDIR /usr/src/app/api
 
 RUN go install github.com/githubnemo/CompileDaemon@latest
 
-CMD CompileDaemon -command="./Worker"
+CMD CompileDaemon -command="./Api"

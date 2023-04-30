@@ -130,7 +130,19 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
     volumes:
-      - ../../src/go/worker:/usr/src/app
+      - ../../src/go:/usr/src/app
+    networks:
+      - backends
+
+  api:
+    image: fabrizio2210/photobook-api-dev
+    environment:
+      NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
+      REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
+    volumes:
+      - ../../src/go/:/usr/src/app
     networks:
       - backends
 
