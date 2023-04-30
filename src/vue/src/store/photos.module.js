@@ -79,7 +79,7 @@ export const photos = {
     get({ commit }, { id }) {
       commit("getRequest");
       photoService.get(id).then(
-        photo => commit("getSuccess", photo["photo"]),
+        photo => commit("getSuccess", photo["event"]),
         error => commit("getFailure", { error, id })
       );
     },
