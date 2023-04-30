@@ -3,6 +3,7 @@ package controllers
 import (
   "context"
   "encoding/json"
+  "log"
   "net/http"
   "time"
 
@@ -15,6 +16,7 @@ import (
   "github.com/gin-gonic/gin"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
+  "go.mongodb.org/mongo-driver/mongo/options"
   "github.com/go-playground/validator/v10"
   "github.com/google/uuid"
 )
@@ -23,9 +25,84 @@ var eventCollection *mongo.Collection = db.GetCollection("events")
 var validate = validator.New()
 
 
+func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
+  var photo *models.PhotoEvent
+  photoId := c.Param("photoId")
+  opts := options.FindOne().SetSort(bson.D{{"timestamp", -1}})
+  err := eventCollection.FindOne(ctx,
+    bson.M{"photo_id": photoId},
+    opts).Decode(&photo)
+  if err != nil {
+    c.JSON(
+      http.StatusNotFound,
+      responses.EventResponse{
+        Status: http.StatusNotFound,
+        Message: "error", Data: map[string]interface{}{"event": err.Error()},
+      },
+    )
+    return nil
+  }
+  if c.Query("author_id") != photo.Author_id {
+    c.JSON(
+      http.StatusUnauthorized,
+      responses.EventResponse{
+        Status: http.StatusUnauthorized,
+        Message: "Not authorized",
+      },
+    )
+    return nil
+  }
+  return photo
+}
+
+func insertEventDBAndPublish(ctx context.Context, c *gin.Context, event *models.PhotoEvent) {
+  id := uuid.New()
+  event.Id = id.String()
+  event.Timestamp = rediswrapper.GetCounter("events_count")
+
+  eventCollection.InsertOne(ctx, event)
+
+  // Preparing for the public audience.
+  event.StripPrivateInfo()
+  event.Location = filemanager.LocationForClient(event.Photo_id)
+
+  encodedEvent, err := json.Marshal(event)
+  if err != nil {
+    panic(err)
+  }
+  rediswrapper.Publish("sse", encodedEvent)
+  log.Printf("Photo edited:%v", event)
+
+  c.JSON(
+    http.StatusOK,
+    responses.EventResponse{
+      Status: http.StatusOK,
+      Message: "success",
+      Data: map[string]interface{}{"event": event},
+    },
+  )
+}
+
+func DeletePhoto() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    new_event := maybeGetPhoto(ctx, c)
+    if new_event == nil {
+      // Photo not found or not authorized.
+      return
+    }
+
+    new_event.Event = "deletion"
+    insertEventDBAndPublish(ctx, c, new_event)
+
+  }
+}
+
 func EditPhoto() gin.HandlerFunc {
   return func(c *gin.Context) {
-    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     var data models.PhotoEdit
     defer cancel()
 
@@ -53,64 +130,20 @@ func EditPhoto() gin.HandlerFunc {
       return
     }
 
-    var photo models.PhotoEvent
-    photoId := c.Param("photoId")
-    err := eventCollection.Find(ctx,
-      bson.M{"photo_id": photoId}).SetSort(
-      bson.D{{"timestamp", 1}}).SetLimit(1).Decode(&photo)
-    if err != nil {
-      c.JSON(
-        http.StatusNotFound,
-        responses.EventResponse{
-          Status: http.StatusNotFound,
-          Message: "error", Data: map[string]interface{}{"event": err.Error()},
-        },
-      )
+    new_event := maybeGetPhoto(ctx, c)
+    if new_event == nil {
+      // Photo not found or not authorized.
       return
     }
 
-    if c.Query("author_id") != photo.Author_id {
-      c.JSON(
-        http.StatusUnauthorized,
-        responses.EventResponse{
-          Status: http.StatusUnauthorized,
-          Message: "Not authorized",
-        },
-      )
-      return
-    }
-    
-    new_event := photo
     if data.Author != "" {
       new_event.Author = data.Author
     }
     if data.Description != "" {
       new_event.Description = data.Description
     }
-    id := uuid.New()
-    new_event.Id = id.String()
     new_event.Event = "edit"
-    new_event.Timestamp = rediswrapper.GetCounter("events_count")
-
-    eventCollection.InsertOne(ctx, new_event)
-
-    // Preparing for the public audiance.
-    new_event.Author_id = ""
-    new_event.Location = filemanager.LocationForClient(new_event.Photo_id)
-
-    encodedEvent, err := json.Marshal(new_event)
-    if err != nil {
-      panic(err)
-    }
-    rediswrapper.Publish("sse", encodedEvent)
-
-    c.JSON(
-      http.StatusOK,
-      responses.EventResponse{
-        Status: http.StatusOK,
-        Message: "success",
-        Data: map[string]interface{}{"event": new_event},
-      },
-    )
+    
+    insertEventDBAndPublish(ctx, c, new_event)
   }
 }

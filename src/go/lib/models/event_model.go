@@ -16,3 +16,7 @@ type PhotoEdit struct {
   Author      string `json:"author,omitempty"`
   Description string `json:"description,omitempty"`
 }
+
+func (e *PhotoEvent) StripPrivateInfo() {
+  e.Author_id = ""
+}
