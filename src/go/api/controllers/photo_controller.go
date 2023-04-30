@@ -55,7 +55,9 @@ func EditPhoto() gin.HandlerFunc {
 
     var photo models.PhotoEvent
     photoId := c.Param("photoId")
-    err := eventCollection.FindOne(ctx, bson.M{"photo_id": photoId}).Decode(&photo)
+    err := eventCollection.Find(ctx,
+      bson.M{"photo_id": photoId}).SetSort(
+      bson.D{{"timestamp", 1}}).SetLimit(1).Decode(&photo)
     if err != nil {
       c.JSON(
         http.StatusNotFound,

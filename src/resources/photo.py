@@ -52,7 +52,6 @@ class Photo(Resource):
                            timestamp=RedisWrapper.get_counter("events_count"))
 
         new_photo.save_to_db()
-        photo[0].delete_from_db()
         # Notify other clients
         RedisWrapper.publish(json.dumps(
           FileManager.photo_to_client(
@@ -94,7 +93,6 @@ class Photo(Resource):
                            timestamp=RedisWrapper.get_counter("events_count"))
 
         new_photo.save_to_db()
-        photo[0].delete_from_db()
         # Notify other clients
         RedisWrapper.publish(json.dumps(
           FileManager.photo_to_client(
