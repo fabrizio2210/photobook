@@ -94,7 +94,7 @@ export const photos = {
     del({ commit }, { uid, id }) {
       commit("deleteRequest");
       photoService.del(uid, id).then(
-        photo => commit("deleteSuccess", photo["photo"]),
+        photo => commit("deleteSuccess", photo["event"]),
         error => commit("deleteFailure", error)
       );
     },
@@ -132,20 +132,8 @@ export const photos = {
       Vue.delete(state.all, "loading");
     },
     deleteSuccess(state, photo) {
-      if (typeof state.all.photos_list !== "undefined") {
-        for (var i = 0; i < state.all.photos_list.length; i++) {
-          if (state.all.photos_list[i].photo_id == photo.photo_id) {
-            state.all.photos_list.splice(i, 1);
-          }
-        }
-      }
-      if (typeof state.my.photos_list !== "undefined") {
-        for (i = 0; i < state.my.photos_list.length; i++) {
-          if (state.my.photos_list[i].photo_id == photo.photo_id) {
-            state.my.photos_list.splice(i, 1);
-          }
-        }
-      }
+      mergeEvents(state.all.photos_list, [photo]);
+      mergeEvents(state.my.photos_list, [photo]);
       Vue.delete(state.all, "loading");
     },
     prepareEdit(state, id) {
