@@ -62,7 +62,7 @@ export const photos = {
     },
     edit({ commit }, { uid, photo }) {
       photoService.put(uid, photo).then(
-        photo => commit("editSuccess", photo["photo"]),
+        photo => commit("editSuccess", photo["event"]),
         error => commit("editFailure", error)
       );
     },

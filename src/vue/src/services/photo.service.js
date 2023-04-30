@@ -89,6 +89,10 @@ function handleResponse(response) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject(error);
     }
-    return data;
+    if (typeof data.data !== 'undefined'){
+      return data.data;
+    } else {
+      return data;
+    }
   });
 }
