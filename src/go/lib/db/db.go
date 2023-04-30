@@ -3,6 +3,7 @@ package db
 import (
     "context"
     "fmt"
+    "log"
     "os"
     "time"
 
@@ -11,6 +12,35 @@ import (
     "go.mongodb.org/mongo-driver/mongo/options"
     photopb "github.com/fabrizio2210/photobook"
 )
+
+func ConnectDB() *mongo.Client  {
+    client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("DB_URL")))
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+    err = client.Connect(ctx)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //ping the database
+    err = client.Ping(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("Connected to MongoDB")
+    return client
+}
+
+//Client instance
+var DB *mongo.Client = ConnectDB()
+
+func GetCollection(collectionName string) *mongo.Collection {
+    collection := DB.Database(os.Getenv("DB_NAME")).Collection(collectionName)
+    return collection
+}
 
 func AcceptPhoto(photo_in *photopb.PhotoIn){
   insertPhoto(photo_in, "events")

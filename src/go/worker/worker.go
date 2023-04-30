@@ -1,9 +1,9 @@
 package main
 
-
 import (
     "context"
     "Worker/db"
+    "Worker/models"
     "encoding/json"
     "fmt"
     "os"
@@ -21,17 +21,6 @@ import (
 type NudityResponse struct {
     Value int
     Description  string
-}
-
-type PhotoEvent struct {
-  Id string `json:"id"`
-  Description string `json:"description"`
-  Photo_id string `json:"photo_id"`
-  Order int64 `json:"order"`
-  Author string `json:"author"`
-  Event string `json:"event"`
-  Timestamp int64 `json:"timestamp"`
-  Location string `json:"location"`
 }
 
 var  nudity_api_url = "https://api.apilayer.com/nudity_detection/upload"
@@ -94,7 +83,8 @@ func main() {
         //db.DiscardPhoto(photo_in)
         // Notify all the clients.
         
-        encodedJson, err := json.Marshal(PhotoEvent{
+        // Omitting AuthorId on purpose.
+        encodedJson, err := json.Marshal(models.PhotoEvent{
           Id: *photo_in.Id,
           Description: *photo_in.Description,
           Photo_id: *photo_in.PhotoId,
