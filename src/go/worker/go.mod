@@ -1,10 +1,9 @@
-module fabrizio2210/Worker
+module Worker
 
 go 1.18
 
 require google.golang.org/protobuf v1.26.0
 
-require db v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/golang/snappy v0.0.1 // indirect
@@ -30,6 +29,5 @@ require (
 )
 
 replace (
-	db => ./db
 	github.com/fabrizio2210/photobook => ./github.com/fabrizio2210/photobook
 )
