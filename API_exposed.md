@@ -25,9 +25,14 @@ Where the user can see all the photos
 
 # Backend API
 
-## Upload or Edit photo
+## Edit/Delete a photo or get latest event
 
 ### /api/photo/<uuid> GET/PUT/DELETE
+
+
+## Upload photo
+
+### /api/new_photo POST
 
 
 ## Identification

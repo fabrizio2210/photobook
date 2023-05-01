@@ -89,7 +89,7 @@ func insertEventDBAndPublish(ctx context.Context, c *gin.Context, event *models.
   returnEvent(c, event)
 }
 
-func GetPhoto() gin.HandlerFunc {
+func GetPhotoLatestEvent() gin.HandlerFunc {
   return func(c *gin.Context) {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     defer cancel()
@@ -169,5 +169,45 @@ func EditPhoto() gin.HandlerFunc {
     new_event.Event = "edit"
     
     insertEventDBAndPublish(ctx, c, new_event)
+  }
+}
+
+func GetAllPhotEvents() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    filter := bson.D{}
+    if c.Query("author_id") != "" {
+      filter = bson.D{{"author_id", c.Query("author_id")}}
+    }
+    opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
+    cursor, err := eventCollection.Find(ctx, filter, opts)
+    if err != nil {
+      c.JSON(
+        http.StatusNotFound,
+        responses.EventResponse{
+          Status: http.StatusNotFound,
+          Message: "error", Data: map[string]interface{}{"event": err.Error()},
+        },
+      )
+      return
+    }
+    var events []models.PhotoEvent
+    if err = cursor.All(ctx, &events); err != nil {
+      panic(err)
+    }
+    for index, event := range events {
+      events[index].Location = filemanager.LocationForClient(event.Photo_id)
+    }
+
+    c.JSON(
+      http.StatusOK,
+      responses.EventResponse{
+        Status: http.StatusOK,
+        Message: "success",
+        Data: map[string]interface{}{"events": events},
+      },
+    )
   }
 }

@@ -79,9 +79,9 @@ services:
     labels: 
       traefik.port: 80
       traefik.enable: "true"
-      traefik.backend.rule: 'PathPrefix(`/api`)'
+      traefik.backend.rule: 'PathPrefix(`/api/new_photo`)'
       traefik.http.services.backend-service.loadbalancer.server.port: 5000
-      traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
+      traefik.http.routers.backend.rule: "PathPrefix(`/api/new_photo`)"
     environment:
       REDIS_URL: redis://redis
       DB_URL: mongodb://root:develop@mongo:27017/
@@ -139,9 +139,9 @@ services:
     labels:
       traefik.port: 80
       traefik.enable: "true"
-      traefik.api.rule: "PathPrefix(`/api/photo`)"
+      traefik.api.rule: "PathPrefix(`/api`)"
       traefik.http.services.api-service.loadbalancer.server.port: 5000
-      traefik.http.routers.api.rule: "PathPrefix(`/api/photo`)"
+      traefik.http.routers.api.rule: "PathPrefix(`/api`)"
     environment:
       NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
       REDIS_HOST: redis
