@@ -25,7 +25,7 @@ export default {
     }
   },
   mounted() {
-    if (!this.auth.user) {
+    if (!this.auth.user || !this.auth.user.uid) {
       this.getUid();
     }
   }

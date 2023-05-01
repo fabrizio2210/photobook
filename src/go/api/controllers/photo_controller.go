@@ -193,7 +193,7 @@ func GetAllPhotEvents() gin.HandlerFunc {
       )
       return
     }
-    var events []models.PhotoEvent
+    events := []models.PhotoEvent{}
     if err = cursor.All(ctx, &events); err != nil {
       panic(err)
     }

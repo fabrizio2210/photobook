@@ -20,6 +20,7 @@ var redisClient = redis.NewClient(&redis.Options{
 func main() {
   router := gin.Default()
   routes.PhotoRoute(router)
+  routes.UidRoute(router)
 
   router.Run("0.0.0.0:5000")
 }

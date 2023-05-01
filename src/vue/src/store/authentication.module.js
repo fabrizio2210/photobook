@@ -19,12 +19,14 @@ export const authentication = {
   },
   mutations: {
     get_uid(state, uid) {
-      if (!state.user) {
-        state.user = { uid: uid };
-      } else {
-        Vue.set(state.user, "uid", uid);
+      if (typeof uid != "undefined") {
+        if (!state.user) {
+          state.user = { uid: uid };
+        } else {
+          Vue.set(state.user, "uid", uid);
+        }
+        localStorage.setItem("user", JSON.stringify(state.user));
       }
-      localStorage.setItem("user", JSON.stringify(state.user));
     },
     set_name(state, author) {
       if (!state.user) {

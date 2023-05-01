@@ -22,6 +22,6 @@ function handleResponse(response) {
       return Promise.reject(error);
     }
 
-    return data;
+    return data.data;
   });
 }
