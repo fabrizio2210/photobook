@@ -1,0 +1,11 @@
+FROM golang
+
+COPY src/go/ /usr/src/app
+
+WORKDIR /usr/src/app/api
+
+ENV GIN_MODE release
+
+RUN go build
+
+CMD ./Api

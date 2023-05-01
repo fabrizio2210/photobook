@@ -77,9 +77,9 @@ services:
     labels: 
       traefik.port: 80
       traefik.enable: "true"
-      traefik.frontend.rule: 'PathPrefix(`/api`)'
+      traefik.frontend.rule: 'PathPrefix(`/api/new_photo`)'
       traefik.http.services.backend-service.loadbalancer.server.port: 80
-      traefik.http.routers.backend.rule: "PathPrefix(`/api`)"
+      traefik.http.routers.backend.rule: "PathPrefix(`/api/new_photo`)"
     environment:
       REDIS_URL: redis://redis
     volumes:
@@ -98,6 +98,45 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: develop
+    networks:
+      - backends
+
+  worker:
+    image: fabrizio2210/photobook-worker
+    environment:
+      NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
+      REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
+    networks:
+      - backends
+
+  api:
+    image: fabrizio2210/photobook-api
+    labels:
+      traefik.port: 80
+      traefik.enable: "true"
+      traefik.api.rule: "PathPrefix(`/api`)"
+      traefik.http.services.api-service.loadbalancer.server.port: 5000
+      traefik.http.routers.api.rule: "PathPrefix(`/api`)"
+    environment:
+      NUDITY_APILAYER_KEY: ${NUDITY_APILAYER_KEY}
+      REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
+    networks:
+      - backends
+
+  sse:
+    image: fabrizio2210/photobook-sse
+    labels: 
+        traefik.port: 80
+        traefik.enable: "true"
+        traefik.sse.rule: "PathPrefix(`/api/notifications`)"
+        traefik.http.services.sse-service.loadbalancer.server.port: 3000
+        traefik.http.routers.sse.rule: "PathPrefix(`/api/notifications`)"
+    environment:
+      REDIS_HOST: redis
     networks:
       - backends
 
