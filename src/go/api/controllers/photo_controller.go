@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "log"
   "net/http"
+  "os"
   "time"
 
   "Api/db"
@@ -54,6 +55,17 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     return nil
   }
   if ctx.Value("private") == true {
+    // Block if edit/deletion.
+    if os.Getenv("BLOCK_UPLOAD") != "" {
+      c.JSON(
+        http.StatusUnauthorized,
+        responses.EventResponse{
+          Status: http.StatusUnauthorized,
+          Message: os.Getenv("BLOCK_UPLOAD_MSG"),
+        },
+      )
+    }
+    // Do not authorize if is not the author.
     if c.Query("author_id") != photo.Author_id {
       c.JSON(
         http.StatusUnauthorized,
@@ -181,7 +193,7 @@ func GetAllPhotEvents() gin.HandlerFunc {
     if c.Query("author_id") != "" {
       filter = bson.D{{"author_id", c.Query("author_id")}}
     }
-    opts := options.Find().SetSort(bson.D{{"timestamp", -1}})
+    opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
     cursor, err := eventCollection.Find(ctx, filter, opts)
     if err != nil {
       c.JSON(
