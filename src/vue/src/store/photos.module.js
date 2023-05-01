@@ -87,7 +87,7 @@ export const photos = {
       commit("getOwnRequest");
 
       photoService.getOwn(uid).then(
-        photos => commit("getOwnSuccess", photos["photos"]),
+        photos => commit("getOwnSuccess", photos["events"]),
         error => commit("getOwnFailure", error)
       );
     },
