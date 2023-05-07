@@ -41,26 +41,29 @@ func TestEventRoute(t *testing.T) {
   mt.Run("test", func(mt *mtest.T) {
     db.DB = mt.Client
     controllers.EventCollection = mt.Coll
-    want := models.PhotoEvent{
+    source := models.PhotoEvent{
       Author:"author",
       Author_id:"abc-123-abc",
       Description:"A description",
       Event:"creation",
       Id:"abc-123-123",
-      Location:"/static/resized/abc-123.jpg",
+      Location:"",
       Order:1,
       Photo_id:"abc-123",
       Timestamp:1,
     }
+    want := source
+    want.Author_id = ""
+    want.Location = "/static/resized/abc-123.jpg"
     first := mtest.CreateCursorResponse(1, "test.trainers", mtest.FirstBatch, bson.D{
-      {Key: "Author", Value: want.Author},
-      {Key: "Author_id", Value: want.Author_id},
-      {Key: "Description", Value: want.Description},
-      {Key: "Event", Value: want.Event},
-      {Key: "Id", Value: want.Id},
-      {Key: "Order", Value: want.Order},
-      {Key: "Photo_id", Value: want.Photo_id},
-      {Key: "Timestamp", Value: want.Timestamp},
+      {Key: "Author", Value: source.Author},
+      {Key: "Author_id", Value: source.Author_id},
+      {Key: "Description", Value: source.Description},
+      {Key: "Event", Value: source.Event},
+      {Key: "Id", Value: source.Id},
+      {Key: "Order", Value: source.Order},
+      {Key: "Photo_id", Value: source.Photo_id},
+      {Key: "Timestamp", Value: source.Timestamp},
     })
     killCursors := mtest.CreateCursorResponse(0, "test.trainers", mtest.NextBatch)
     mt.AddMockResponses(first, killCursors)

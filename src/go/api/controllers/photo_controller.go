@@ -112,6 +112,7 @@ func GetPhotoLatestEvent() gin.HandlerFunc {
       return
     }
     event.Location = filemanager.LocationForClient(event.Photo_id)
+    event.Author_id = ""
     returnEvent(c, event)
   }
 }
