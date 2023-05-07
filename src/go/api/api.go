@@ -2,8 +2,11 @@ package main
 
 import (
     "context"
-    "Api/routes"
     "os"
+
+    "Api/controllers"
+    "Api/routes"
+    "Api/db"
 
     "github.com/go-redis/redis/v8"
     "github.com/gin-gonic/gin"
@@ -16,11 +19,16 @@ var redisClient = redis.NewClient(&redis.Options{
     Addr: os.Getenv("REDIS_HOST") + ":6379",
 })
 
+func setupRouter() *gin.Engine {
+  r := gin.Default()
+  routes.PhotoRoute(r)
+  routes.UidRoute(r)
+  return r
+}
 
 func main() {
-  router := gin.Default()
-  routes.PhotoRoute(router)
-  routes.UidRoute(router)
-
+  db.DB = db.ConnectDB()
+  controllers.EventCollection = db.GetCollection("events")
+  router := setupRouter()
   router.Run("0.0.0.0:5000")
 }

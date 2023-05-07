@@ -15,6 +15,17 @@ services:
     volumes:
       - ../../src:/opt/web
 
+  api:
+    image: fabrizio2210/photobook-api
+    command: go test -v
+    environment:
+      REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
+    links:
+      - "redis"
+      - "mongo"
+
   redis:
     image: redis
 

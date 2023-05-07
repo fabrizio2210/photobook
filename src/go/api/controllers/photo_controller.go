@@ -8,7 +8,6 @@ import (
   "os"
   "time"
 
-  "Api/db"
   "Api/filemanager"
   "Api/models"
   "Api/responses"
@@ -22,14 +21,14 @@ import (
   "github.com/google/uuid"
 )
 
-var eventCollection *mongo.Collection = db.GetCollection("events")
+var EventCollection *mongo.Collection
 var validate = validator.New()
 
 
 func returnEvent(c *gin.Context, event *models.PhotoEvent) {
   c.JSON(
     http.StatusOK,
-    responses.EventResponse{
+    responses.Response{
       Status: http.StatusOK,
       Message: "success",
       Data: map[string]interface{}{"event": event},
@@ -41,13 +40,13 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
   var photo *models.PhotoEvent
   photoId := c.Param("photoId")
   opts := options.FindOne().SetSort(bson.D{{"timestamp", -1}})
-  err := eventCollection.FindOne(ctx,
+  err := EventCollection.FindOne(ctx,
     bson.M{"photo_id": photoId},
     opts).Decode(&photo)
   if err != nil {
     c.JSON(
       http.StatusNotFound,
-      responses.EventResponse{
+      responses.Response{
         Status: http.StatusNotFound,
         Message: "error", Data: map[string]interface{}{"event": err.Error()},
       },
@@ -59,7 +58,7 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     if os.Getenv("BLOCK_UPLOAD") != "" {
       c.JSON(
         http.StatusUnauthorized,
-        responses.EventResponse{
+        responses.Response{
           Status: http.StatusUnauthorized,
           Message: os.Getenv("BLOCK_UPLOAD_MSG"),
         },
@@ -69,7 +68,7 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     if c.Query("author_id") != photo.Author_id {
       c.JSON(
         http.StatusUnauthorized,
-        responses.EventResponse{
+        responses.Response{
           Status: http.StatusUnauthorized,
           Message: "Not authorized",
         },
@@ -85,7 +84,7 @@ func insertEventDBAndPublish(ctx context.Context, c *gin.Context, event *models.
   event.Id = id.String()
   event.Timestamp = rediswrapper.GetCounter("events_count")
 
-  eventCollection.InsertOne(ctx, event)
+  EventCollection.InsertOne(ctx, event)
 
   // Preparing for the public audience.
   event.StripPrivateInfo()
@@ -144,7 +143,7 @@ func EditPhoto() gin.HandlerFunc {
     if err := c.BindJSON(&data); err != nil {
       c.JSON(
         http.StatusBadRequest,
-        responses.EventResponse{
+        responses.Response{
           Status: http.StatusBadRequest,
           Message: "error",
           Data: map[string]interface{}{"event": err.Error()},
@@ -156,7 +155,7 @@ func EditPhoto() gin.HandlerFunc {
     if validationErr := validate.Struct(&data); validationErr != nil {
       c.JSON(
         http.StatusBadRequest,
-        responses.EventResponse{
+        responses.Response{
           Status: http.StatusBadRequest,
           Message: "error",
           Data: map[string]interface{}{"event": validationErr.Error()},
@@ -194,11 +193,11 @@ func GetAllPhotEvents() gin.HandlerFunc {
       filter = bson.D{{"author_id", c.Query("author_id")}}
     }
     opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
-    cursor, err := eventCollection.Find(ctx, filter, opts)
+    cursor, err := EventCollection.Find(ctx, filter, opts)
     if err != nil {
       c.JSON(
         http.StatusNotFound,
-        responses.EventResponse{
+        responses.Response{
           Status: http.StatusNotFound,
           Message: "error", Data: map[string]interface{}{"event": err.Error()},
         },
@@ -215,7 +214,7 @@ func GetAllPhotEvents() gin.HandlerFunc {
 
     c.JSON(
       http.StatusOK,
-      responses.EventResponse{
+      responses.Response{
         Status: http.StatusOK,
         Message: "success",
         Data: map[string]interface{}{"events": events},

@@ -32,6 +32,7 @@ var redisClient = redis.NewClient(&redis.Options{
 })
 
 func isNudity(payload []byte) bool{
+  db.DB = db.ConnectDB()
   client := &http.Client {}
   reader:= bytes.NewReader(payload)
   req, err := http.NewRequest("POST", nudity_api_url, reader)

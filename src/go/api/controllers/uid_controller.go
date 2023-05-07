@@ -21,7 +21,7 @@ func GetUid() gin.HandlerFunc {
 
     c.JSON(
       http.StatusOK,
-      responses.EventResponse{
+      responses.Response{
         Status: http.StatusOK,
         Message: "success",
         Data: map[string]interface{}{"uid": id.String()},
