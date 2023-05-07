@@ -53,7 +53,7 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     )
     return nil
   }
-  if ctx.Value("private") == true {
+  if ctx.Value("write") == true {
     // Block if edit/deletion.
     if os.Getenv("BLOCK_UPLOAD") != "" {
       c.JSON(
@@ -64,6 +64,8 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
         },
       )
     }
+  }
+  if ctx.Value("private") == true {
     // Do not authorize if is not the author.
     if c.Query("author_id") != photo.Author_id {
       c.JSON(
@@ -106,6 +108,7 @@ func GetPhotoLatestEvent() gin.HandlerFunc {
     defer cancel()
 
     context.WithValue(ctx, "private", false)
+    context.WithValue(ctx, "write", false)
     event := maybeGetPhoto(ctx, c)
     if event == nil {
       // Photo not found.
@@ -123,6 +126,7 @@ func DeletePhoto() gin.HandlerFunc {
     defer cancel()
 
     context.WithValue(ctx, "private", true)
+    context.WithValue(ctx, "write", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
@@ -166,6 +170,7 @@ func EditPhoto() gin.HandlerFunc {
     }
 
     context.WithValue(ctx, "private", true)
+    context.WithValue(ctx, "write", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
