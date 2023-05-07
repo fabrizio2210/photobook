@@ -13,12 +13,14 @@ import (
   "Api/db"
 
 	"github.com/stretchr/testify/assert"
+  "github.com/gin-gonic/gin"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo/integration/mtest"
 )
 
 
 func TestUidRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
@@ -34,11 +36,12 @@ func TestUidRoute(t *testing.T) {
 
 
 func TestEventRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
 	router := setupRouter()
   mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
   defer mt.Close()
 
-  mt.Run("test", func(mt *mtest.T) {
+  mt.Run("GET single event success", func(mt *mtest.T) {
     db.DB = mt.Client
     controllers.EventCollection = mt.Coll
     source := models.PhotoEvent{
@@ -55,7 +58,7 @@ func TestEventRoute(t *testing.T) {
     want := source
     want.Author_id = ""
     want.Location = "/static/resized/abc-123.jpg"
-    first := mtest.CreateCursorResponse(1, "test.trainers", mtest.FirstBatch, bson.D{
+    first := mtest.CreateCursorResponse(1, "photobook.events", mtest.FirstBatch, bson.D{
       {Key: "Author", Value: source.Author},
       {Key: "Author_id", Value: source.Author_id},
       {Key: "Description", Value: source.Description},
@@ -65,7 +68,7 @@ func TestEventRoute(t *testing.T) {
       {Key: "Photo_id", Value: source.Photo_id},
       {Key: "Timestamp", Value: source.Timestamp},
     })
-    killCursors := mtest.CreateCursorResponse(0, "test.trainers", mtest.NextBatch)
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
     mt.AddMockResponses(first, killCursors)
 
 
