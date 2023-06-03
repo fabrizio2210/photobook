@@ -7,6 +7,7 @@ import (
     "Api/controllers"
     "Api/routes"
     "Api/db"
+    "Api/filemanager"
 
     "github.com/go-redis/redis/v8"
     "github.com/gin-gonic/gin"
@@ -27,6 +28,8 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+  filemanager.SetUploadFolder(os.Getenv("STATIC_FILES_PATH"))
+  filemanager.SetFullQualityFolder(os.Getenv("STATIC_FILES_PATH"))
   db.DB = db.ConnectDB()
   controllers.EventCollection = db.GetCollection("events")
   router := setupRouter()

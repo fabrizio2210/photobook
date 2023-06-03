@@ -72,26 +72,6 @@ services:
     networks: 
       - backends
 
-  flask:
-    image: fabrizio2210/photobook-backend-dev
-    deploy:
-      replicas: 1
-    labels: 
-      traefik.port: 80
-      traefik.enable: "true"
-      traefik.backend.rule: 'PathPrefix(`/api/new_photo`)'
-      traefik.http.services.backend-service.loadbalancer.server.port: 5000
-      traefik.http.routers.backend.rule: "PathPrefix(`/api/new_photo`)"
-    environment:
-      REDIS_URL: redis://redis
-      DB_URL: mongodb://root:develop@mongo:27017/
-      DB_NAME: photobook
-    volumes:
-      - static_files:/static_files
-      - ../../src:/opt/web
-    networks: 
-      - backends
-
   redis:
     image: redis
     networks:
@@ -131,6 +111,7 @@ services:
       DB_NAME: photobook
     volumes:
       - ../../src/go:/usr/src/app
+      - static_files:/static_files
     networks:
       - backends
 
@@ -147,8 +128,10 @@ services:
       REDIS_HOST: redis
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+      STATIC_FILES_PATH: /static_files
     volumes:
       - ../../src/go/:/usr/src/app
+      - static_files:/static_files
     networks:
       - backends
 

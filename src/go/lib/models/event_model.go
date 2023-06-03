@@ -12,9 +12,15 @@ type PhotoEvent struct {
   Location    string `json:"location"`
 }
 
-type PhotoEdit struct {
+type PhotoInputJson struct {
   Author      string `json:"author,omitempty"`
   Description string `json:"description,omitempty"`
+}
+
+type PhotoInputForm struct {
+  Author      string `form:"author"`
+  Author_id   string `form:"author_id" validate:"required"`
+  Description string `form:"description"`
 }
 
 func (e *PhotoEvent) StripPrivateInfo() {

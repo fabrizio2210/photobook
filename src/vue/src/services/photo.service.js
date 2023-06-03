@@ -3,7 +3,6 @@ var config = {};
 config.apiUrl = window.location.origin;
 
 export const photoService = {
-  create,
   get,
   getAll,
   getOwn,
@@ -38,17 +37,6 @@ function getOwn(uid) {
   };
   url.search = new URLSearchParams(params).toString();
   return fetch(url, requestOptions).then(handleResponse);
-}
-
-function create(photoname) {
-  const requestOptions = {
-    method: "POST",
-    body: JSON.stringify({ name: photoname })
-  };
-
-  return fetch(`${config.apiUrl}/api/new_photo`, requestOptions).then(
-    handleResponse
-  );
 }
 
 function put(uid, photo) {

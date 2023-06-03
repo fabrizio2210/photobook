@@ -10,5 +10,6 @@ func PhotoRoute(router *gin.Engine) {
   router.PUT(   "/api/photo/:photoId", controllers.EditPhoto())
   router.DELETE("/api/photo/:photoId", controllers.DeletePhoto())
   router.GET(   "/api/photo/:photoId", controllers.GetPhotoLatestEvent())
-  router.GET(   "/api/events",         controllers.GetAllPhotEvents())
+  router.GET(   "/api/events",         controllers.GetAllPhotoEvents())
+  router.POST(  "/api/new_photo",      controllers.PostNewPhoto())
 }

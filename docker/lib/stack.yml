@@ -70,23 +70,6 @@ services:
     networks: 
       - backends
 
-  flask:
-    image: fabrizio2210/photobook-backend
-    deploy:
-      replicas: 2
-    labels: 
-      traefik.port: 80
-      traefik.enable: "true"
-      traefik.frontend.rule: 'PathPrefix(`/api/new_photo`)'
-      traefik.http.services.backend-service.loadbalancer.server.port: 80
-      traefik.http.routers.backend.rule: "PathPrefix(`/api/new_photo`)"
-    environment:
-      REDIS_URL: redis://redis
-    volumes:
-      - static_files:/static_files
-    networks: 
-      - backends
-
   redis:
     image: redis
     networks:

@@ -28,3 +28,10 @@ func Publish(topic string, json []byte) error{
   }
   return nil
 }
+
+func Enque(queue string, data []byte) error{
+  if err := redisClient.LPush(ctx, queue, data).Err(); err != nil {
+    panic(err)
+  }
+  return nil
+}
