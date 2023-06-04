@@ -2,16 +2,16 @@ version: '3.4'
 
 services:
 
-  flask:
-    image: fabrizio2210/photobook-backend
-    command: python3 /opt/web/tests/test-app.py
+  api:
+    image: fabrizio2210/photobook-api
+    command: go test -v
+    environment:
+      REDIS_HOST: redis
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
     links:
       - "redis"
       - "mongo"
-    deploy:
-      replicas: 1
-    environment:
-      REDIS_URL: redis://redis
 
   redis:
     image: redis

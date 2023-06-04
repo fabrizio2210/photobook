@@ -48,7 +48,6 @@ fi
 # Build
 
 docker build -t fabrizio2210/photobook-frontend:${arch} -f docker/x86_64/Dockerfile-frontend .
-docker build -t fabrizio2210/photobook-backend:${arch} -f docker/x86_64/Dockerfile-backend .
 docker build -t fabrizio2210/photobook-sse:${arch} -f docker/x86_64/Dockerfile-sse .
 docker build -t fabrizio2210/photobook-worker:${arch} -f docker/x86_64/Dockerfile-worker .
 docker build -t fabrizio2210/photobook-api:${arch} -f docker/x86_64/Dockerfile-api .
@@ -62,7 +61,6 @@ docker/lib/test-app.sh
 # Push
 
 docker push fabrizio2210/photobook-frontend:${arch}
-docker push fabrizio2210/photobook-backend:${arch}
 docker push fabrizio2210/photobook-sse:${arch}
 docker push fabrizio2210/photobook-worker:${arch}
 docker push fabrizio2210/photobook-api:${arch}
