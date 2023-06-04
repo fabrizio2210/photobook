@@ -2,7 +2,6 @@ package db
 
 import (
     "context"
-    "fmt"
     "log"
     "os"
     "time"
@@ -30,7 +29,7 @@ func ConnectDB() *mongo.Client  {
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Println("Connected to MongoDB")
+    log.Println("Connected to MongoDB")
     return client
 }
 
@@ -60,7 +59,7 @@ func insertPhoto(photo_in *photopb.PhotoIn, collection_name string) {
     }
   }()
   collection := client.Database(os.Getenv("DB_NAME")).Collection(collection_name)
-  id, err := collection.InsertOne(ctx,
+  _, err = collection.InsertOne(ctx,
                                   bson.D{
                                           {"id", photo_in.Id},
                                           {"photo_id", photo_in.PhotoId},
@@ -74,5 +73,4 @@ func insertPhoto(photo_in *photopb.PhotoIn, collection_name string) {
   if  err != nil {
     panic(err)
   }
-  fmt.Println(id)
 }
