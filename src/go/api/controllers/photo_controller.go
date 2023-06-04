@@ -19,6 +19,7 @@ import (
   "Api/rediswrapper"
 
   photopb "github.com/fabrizio2210/photobook"
+  orientation "github.com/takumakei/exif-orientation"
   "github.com/gin-gonic/gin"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
@@ -353,6 +354,8 @@ func PostNewPhoto() gin.HandlerFunc {
       log.Printf("Error in decoding the image: %v", err.Error())
     }
 
+    o, _ := orientation.Read(bytes.NewReader(flRead))
+    originalImage = orientation.Normalize(originalImage, o)
     originalImageBuf := bytes.NewBuffer([]byte{})
     jpeg.Encode(originalImageBuf, originalImage, nil)
     log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))

@@ -35,3 +35,4 @@ func main() {
   router := setupRouter()
   router.Run("0.0.0.0:5000")
 }
+
