@@ -44,6 +44,11 @@ EOF
   fi
 fi
 
+######
+# Info
+
+docker version
+
 #######
 # Build
 
