@@ -16,7 +16,7 @@ func GetFileName(id string) string {
 }
 
 func LocationForClient(id string) string {
-  return staticPathUrl + "/resized/" + GetFileName(id)
+  return staticPathUrl + "resized/" + GetFileName(id)
 }
 
 func PhotoToClient(event models.PhotoEvent) models.PhotoEvent {
