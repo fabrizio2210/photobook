@@ -319,7 +319,20 @@ func PostNewPhoto() gin.HandlerFunc {
     location := filemanager.LocationForClient(photo_id_str)
 
     // Image processing and writing.
-    form, _ := c.MultipartForm()
+    form, err := c.MultipartForm()
+    if err != nil {
+      log.Printf("No multipart form found: %v", err.Error())
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusBadRequest,
+          Message: "error: no file found or too many",
+          Data: map[string]interface{}{"event": "no file found or too many"},
+        },
+      )
+      return
+    }
+
     files := form.File["file"]
     if (len(files) != 1) {
       log.Printf("Number of files is different from 1: %d", len(files))

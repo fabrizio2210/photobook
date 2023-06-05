@@ -1,24 +1,17 @@
 package main
 
 import (
-    "context"
     "os"
 
     "Api/controllers"
     "Api/routes"
     "Api/db"
     "Api/filemanager"
+    "Api/rediswrapper"
 
-    "github.com/go-redis/redis/v8"
     "github.com/gin-gonic/gin"
 )
 
-
-var ctx = context.Background()
-
-var redisClient = redis.NewClient(&redis.Options{
-    Addr: os.Getenv("REDIS_HOST") + ":6379",
-})
 
 func setupRouter() *gin.Engine {
   r := gin.Default()
@@ -30,6 +23,7 @@ func setupRouter() *gin.Engine {
 func main() {
   filemanager.SetUploadFolder(os.Getenv("STATIC_FILES_PATH"))
   filemanager.SetFullQualityFolder(os.Getenv("STATIC_FILES_PATH"))
+  rediswrapper.RedisClient = rediswrapper.ConnectRedis(os.Getenv("REDIS_HOST") + ":6379")
   db.DB = db.ConnectDB()
   controllers.EventCollection = db.GetCollection("events")
   router := setupRouter()
