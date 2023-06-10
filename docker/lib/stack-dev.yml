@@ -129,6 +129,7 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
       STATIC_FILES_PATH: /static_files
+      GUEST_API_URL: https://have.been.to.it/api/guest
     volumes:
       - ../../src/go/:/usr/src/app
       - static_files:/static_files

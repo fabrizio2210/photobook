@@ -107,6 +107,7 @@ services:
       REDIS_HOST: redis
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+      GUEST_API_URL: https://have.been.to.it/api/guest
     networks:
       - backends
 

@@ -31,7 +31,18 @@ import (
 )
 
 var EventCollection *mongo.Collection
+var GuestApiURL string
 var validate = validator.New()
+
+
+type GuestStruct struct {
+  Editor string `json:"editor"`
+  Name string   `json:"nome"`
+}
+
+type GuestApiResponse struct {
+  Guest GuestStruct `json="guest"`
+}
 
 func allowedExtensions(filename string) bool {
   exts := [3]string{"jpg", "jpeg","png"}
@@ -127,6 +138,55 @@ func blockUpload(c *gin.Context) bool {
   return false
 }
 
+func isEditor(ctx context.Context, id string) bool {
+  httpClient := http.Client{}
+  ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+  defer cancel()
+  req, err := http.NewRequestWithContext(ctx,
+                                         http.MethodGet,
+                                         GuestApiURL + "/" + id, nil)
+  if err != nil {
+    log.Println(err)
+    return false
+  }
+  res, err := httpClient.Do(req)
+  if err != nil {
+    log.Println(err)
+    return false
+  }
+
+  switch res.StatusCode {
+  case http.StatusOK:
+    if res.Body != nil {
+      defer res.Body.Close()
+    }
+    body, _ := ioutil.ReadAll(res.Body)
+
+    var guest_api_response GuestApiResponse
+    if err := json.Unmarshal(body, &guest_api_response); err != nil {
+      log.Println(err)
+      return false
+    }
+    log.Printf("%+v", guest_api_response.Guest)
+    if guest_api_response.Guest.Editor == "sì" {
+      log.Printf("%s (id: %s) is an editor.",
+                 guest_api_response.Guest.Name,
+                 id)
+      return true
+    }
+    log.Printf("%s (id: %s) is NOT an editor.",
+               guest_api_response.Guest.Name,
+               id)
+
+  case http.StatusNotFound:
+    log.Printf("Guest id=%s not found at %s.", id, GuestApiURL)
+
+  default:
+    log.Printf("%v: %s", res.StatusCode, res.Body)
+  }
+  return false
+}
+
 func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
   var photo *models.PhotoEvent
   photoId := c.Param("photoId")
@@ -151,8 +211,8 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
     }
   }
   if ctx.Value("private") == true {
-    // Do not authorize if is not the author.
-    if c.Query("author_id") != photo.Author_id {
+    // Do not authorize if is not the author or editor.
+    if (! isEditor(ctx, c.Query("author_id"))) && c.Query("author_id") != photo.Author_id {
       c.JSON(
         http.StatusUnauthorized,
         responses.Response{
@@ -261,7 +321,10 @@ func GetAllPhotoEvents() gin.HandlerFunc {
 
     filter := bson.D{}
     if c.Query("author_id") != "" {
-      filter = bson.D{{"author_id", c.Query("author_id")}}
+      // Editors can see all the photos.
+      if ! isEditor(ctx, c.Query("author_id")) {
+        filter = bson.D{{"author_id", c.Query("author_id")}}
+      }
     }
     opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
     cursor, err := EventCollection.Find(ctx, filter, opts)
@@ -405,7 +468,6 @@ func PostNewPhoto() gin.HandlerFunc {
         log.Fatalln("Failed to encode address book:", err)
     }
     rediswrapper.Enque("in_photos", marshalledNewPhoto)
-
 
   }
 }
