@@ -22,9 +22,15 @@ export default {
   methods: {
     async getUid() {
       this.$store.dispatch("authentication/get_uid");
+    },
+    setUid(id) {
+      this.$store.dispatch("authentication/set_uid", {id});
     }
   },
   mounted() {
+    if (typeof this.$route.query.id != "undefined") {
+      this.setUid(this.$route.query.id);
+    }
     if (!this.auth.user || !this.auth.user.uid) {
       this.getUid();
     }

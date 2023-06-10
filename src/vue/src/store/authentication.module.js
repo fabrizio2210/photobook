@@ -10,15 +10,18 @@ export const authentication = {
   actions: {
     get_uid({ commit }) {
       uidService.getUid().then(uid => {
-        commit("get_uid", uid["uid"]);
+        commit("set_uid", uid["uid"]);
       });
+    },
+    set_uid({ commit }, id) {
+      commit("set_uid", id["id"]);
     },
     set_name({ commit }, author) {
       commit("set_name", author);
     }
   },
   mutations: {
-    get_uid(state, uid) {
+    set_uid(state, uid) {
       if (typeof uid != "undefined") {
         if (!state.user) {
           state.user = { uid: uid };
