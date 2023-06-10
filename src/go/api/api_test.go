@@ -65,7 +65,6 @@ func TestUidRoute(t *testing.T) {
 
 }
 
-
 func TestGetEventRoute(t *testing.T) {
   gin.SetMode(gin.TestMode)
 	router := setupRouter()
@@ -104,6 +103,68 @@ func TestGetEventRoute(t *testing.T) {
 
     w := httptest.NewRecorder()
     req, _ := http.NewRequest("GET", "/api/photo/abc-123", nil)
+    router.ServeHTTP(w, req)
+
+    assert.Equal(t, 200, w.Code)
+    d := json.NewDecoder(w.Body)
+    d.UseNumber()
+    var res responses.Response
+    d.Decode(&res)
+    jsonData, _ := json.Marshal(res.Data["event"])
+    var event models.PhotoEvent
+    json.Unmarshal(jsonData, &event)
+    assert.EqualValues(t, want, event)
+  })
+}
+
+func TestPutSuccessEventRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
+  uuid.SetRand(rand.New(rand.NewSource(1)))
+
+  mt.Run("PUT single event success", func(mt *mtest.T) {
+    db.DB = mt.Client
+    controllers.EventCollection = mt.Coll
+    source := models.PhotoEvent{
+      Author:"author",
+      Author_id:"abc-123-abc",
+      Description:"A description",
+      Event:"creation",
+      Id:"52fdfc07-2182-454f-963f-5f0f9a621d72",
+      Location:"",
+      Order:1,
+      Photo_id:"abc-123",
+      Timestamp:1,
+    }
+    want := source
+    want.Description = "new_description"
+    want.Event = "edit"
+    want.Author_id = ""
+    want.Timestamp = 3
+    want.Location = "/static/resized/abc-123.jpg"
+    first := mtest.CreateCursorResponse(1, "photobook.events", mtest.FirstBatch, bson.D{
+      {Key: "Author", Value: source.Author},
+      {Key: "Author_id", Value: source.Author_id},
+      {Key: "Description", Value: source.Description},
+      {Key: "Event", Value: "random-id-number"},
+      {Key: "Id", Value: source.Id},
+      {Key: "Order", Value: source.Order},
+      {Key: "Photo_id", Value: source.Photo_id},
+      {Key: "Timestamp", Value: source.Timestamp},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(first, killCursors)
+    expectedSse := []byte(`{"id":"52fdfc07-2182-454f-963f-5f0f9a621d72","description":"new_description","photo_id":"abc-123","order":1,"author":"author","author_id":"","event":"edit","timestamp":3,"location":"/static/resized/abc-123.jpg"}`)
+    data := []byte(`{"author_id": "`+ source.Author_id +`", "description": "new_description"}`)
+    var redisMock redismock.ClientMock
+    rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+    redisMock.ExpectIncr("events_count").SetVal(3)
+    redisMock.ExpectPublish("sse", expectedSse).SetVal(0)
+
+    w := httptest.NewRecorder()
+    req, _ := http.NewRequest("PUT", "/api/photo/abc-123", bytes.NewBuffer(data))
     router.ServeHTTP(w, req)
 
     assert.Equal(t, 200, w.Code)
