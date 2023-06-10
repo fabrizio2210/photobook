@@ -50,16 +50,6 @@ func intPtr(i int64) *int64 {
   return &i
 }
 
-// newTestRedis returns a redis.Cmdable.
-//func newTestRedis() *redismock.ClientMock {
-//  mr, err := miniredis.Run()
-//  if err != nil {
-//    panic(err)
-//  }
-//  rediswrapper.RedisClient = rediswrapper.ConnectRedis(mr.Addr())
-//  return redismock.NewNiceMock(rediswrapper.RedisClient)
-//}
-
 func TestUidRoute(t *testing.T) {
   gin.SetMode(gin.TestMode)
 	router := setupRouter()
