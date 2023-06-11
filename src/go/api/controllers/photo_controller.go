@@ -146,12 +146,12 @@ func isEditor(ctx context.Context, id string) bool {
                                          http.MethodGet,
                                          GuestApiURL + "/" + id, nil)
   if err != nil {
-    log.Println(err)
+    log.Printf("Error in creating request:%v", err)
     return false
   }
   res, err := httpClient.Do(req)
   if err != nil {
-    log.Println(err)
+    log.Printf("Error in doing request: %v",err)
     return false
   }
 
@@ -164,7 +164,7 @@ func isEditor(ctx context.Context, id string) bool {
 
     var guest_api_response GuestApiResponse
     if err := json.Unmarshal(body, &guest_api_response); err != nil {
-      log.Println(err)
+      log.Printf("Error in unmarshaling the request from the API: %v", err)
       return false
     }
     log.Printf("%+v", guest_api_response.Guest)
