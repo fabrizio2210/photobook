@@ -252,8 +252,8 @@ func GetPhotoLatestEvent() gin.HandlerFunc {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     defer cancel()
 
-    context.WithValue(ctx, "private", false)
-    context.WithValue(ctx, "write", false)
+    ctx = context.WithValue(ctx, "private", false)
+    ctx = context.WithValue(ctx, "write", false)
     event := maybeGetPhoto(ctx, c)
     if event == nil {
       // Photo not found.
@@ -270,8 +270,8 @@ func DeletePhoto() gin.HandlerFunc {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     defer cancel()
 
-    context.WithValue(ctx, "private", true)
-    context.WithValue(ctx, "write", true)
+    ctx = context.WithValue(ctx, "private", true)
+    ctx = context.WithValue(ctx, "write", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
@@ -294,8 +294,8 @@ func EditPhoto() gin.HandlerFunc {
       return
     }
 
-    context.WithValue(ctx, "private", true)
-    context.WithValue(ctx, "write", true)
+    ctx = context.WithValue(ctx, "private", true)
+    ctx = context.WithValue(ctx, "write", true)
     new_event := maybeGetPhoto(ctx, c)
     if new_event == nil {
       // Photo not found or not authorized.
