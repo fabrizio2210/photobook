@@ -157,7 +157,7 @@ func TestPutSuccessEventRoute(t *testing.T) {
     killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
     mt.AddMockResponses(first, killCursors)
     expectedSse, _ := json.Marshal(want)
-    data := []byte(`{"author_id": "`+ source.Author_id +`", "description": "new_description"}`)
+    data := []byte(`{"author_id": "`+ source.Author_id +`", "description": "` + want.Description +`"}`)
     var redisMock redismock.ClientMock
     rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
     redisMock.ExpectIncr("events_count").SetVal(3)
