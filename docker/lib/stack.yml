@@ -13,7 +13,7 @@ services:
       - "--providers.docker.exposedByDefault=false"
       - "--accessLog"
       - "--log.level=INFO"
-      - "--providers.docker.network=Traefik_backends"
+      - "--providers.docker.network=lib_backends"
       - "--metrics"
       - "--metrics.prometheus"
     volumes:
@@ -137,6 +137,22 @@ services:
         traefik.http.routers.sse.rule: "PathPrefix(`/api/notifications`)"
     environment:
       REDIS_HOST: redis
+    networks:
+      - backends
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    labels: 
+      traefik.port: 80
+      traefik.enable: "true"
+      traefik.mongoexpress.rule: "Host(`mongo-express`)  && PathPrefix(`/`)"
+      traefik.http.services.mongoexpress-service.loadbalancer.server.port: 8081
+      traefik.http.routers.mongoexpress.rule: "Host(`mongo-express`) && PathPrefix(`/`)"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: develop
+      ME_CONFIG_MONGODB_URL: mongodb://root:develop@mongo:27017/
     networks:
       - backends
 
