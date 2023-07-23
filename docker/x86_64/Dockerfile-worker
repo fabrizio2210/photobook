@@ -4,8 +4,6 @@ COPY src/go /usr/src/app
 
 WORKDIR /usr/src/app/worker
 
-ENV GIN_MODE release
-
 RUN go build
 
 CMD ./Worker
