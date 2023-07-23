@@ -136,6 +136,18 @@ services:
     networks:
       - backends
 
+  printer:
+    image: fabrizio2210/photobook-printer-dev
+    environment:
+      DB_URL: mongodb://mongo:27017/
+      DB_NAME: photobook
+      STATIC_FILES_PATH: /static_files
+    volumes:
+      - ../../src/go/:/usr/src/app
+      - static_files:/static_files
+    networks:
+      - backends
+
   sse:
     image: fabrizio2210/photobook-sse-dev
     labels: 

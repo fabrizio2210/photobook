@@ -91,6 +91,8 @@ services:
       REDIS_HOST: redis
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+    volumes:
+      - static_files:/static_files
     networks:
       - backends
 
@@ -108,6 +110,19 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
       GUEST_API_URL: https://have.been.to.it/api/guest
+    volumes:
+      - static_files:/static_files
+    networks:
+      - backends
+
+  printer:
+    image: fabrizio2210/photobook-printer
+    environment:
+      DB_URL: mongodb://root:develop@mongo:27017/
+      DB_NAME: photobook
+      STATIC_FILES_PATH: /static_files
+    volumes:
+      - static_files:/static_files
     networks:
       - backends
 

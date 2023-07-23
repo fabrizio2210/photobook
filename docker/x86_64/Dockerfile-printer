@@ -1,0 +1,11 @@
+FROM golang
+
+COPY src/go /usr/src/app
+
+WORKDIR /usr/src/app/printer
+
+RUN apt update && apt install -y poppler-utils && apt clean
+
+RUN go build
+
+CMD ./Printer
