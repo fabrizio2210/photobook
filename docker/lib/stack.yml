@@ -109,6 +109,7 @@ services:
       REDIS_HOST: redis
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+      STATIC_FILES_PATH: /static_files
       GUEST_API_URL: https://have.been.to.it/api/guest
     volumes:
       - static_files:/static_files
