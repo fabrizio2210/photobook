@@ -139,7 +139,7 @@ services:
   printer:
     image: fabrizio2210/photobook-printer-dev
     environment:
-      DB_URL: mongodb://mongo:27017/
+      DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
       STATIC_FILES_PATH: /static_files
     volumes:
