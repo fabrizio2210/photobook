@@ -8,7 +8,7 @@
         extensions="gif,jpg,jpeg,png,webp"
         accept="image/png,image/gif,image/jpeg,image/webp"
         :multiple="false"
-        :size="1024 * 1024 * 10"
+        :size="1024 * 1024 * 15"
         ref="upload"
         @input-filter="inputFilter"
         v-model="files"
