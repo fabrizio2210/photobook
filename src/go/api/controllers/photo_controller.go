@@ -451,13 +451,15 @@ func PostNewPhoto() gin.HandlerFunc {
       log.Fatal(err)
     }
 
+    truncateAuthor := data.Author[:20]
+    truncateDescription := data.Description[:200]
     // Enque the photo for the worker.
     newPhoto := &photopb.PhotoIn{
       AuthorId: &data.Author_id,
       Id: &event_id_str,
       PhotoId: &photo_id_str,
-      Author: &data.Author,
-      Description: &data.Description,
+      Author: &truncateAuthor,
+      Description: &truncateDescription,
       Timestamp: &timestamp,
       Order: &order,
       Location: &location,
