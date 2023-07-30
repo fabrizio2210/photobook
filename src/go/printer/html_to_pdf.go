@@ -29,7 +29,7 @@ var htmlTemplate = `
 "text/html; charset=utf-8" />
 <style type="text/css">
 .vignetta {width: min-content;}
-p {margin: 0; padding: 0; text-align: center; white-space:break-spaces}
+p {margin: 0; padding: 0; text-align: center; white-space:break-spaces; overflow-wrap: anywhere}
 .ft11{font-size:30px;font-family:BAAAAA+GlacialIndifference;color:#000000;}
 .ft16{font-size:34px;font-family:AAAAAA+GlacialIndifference;color:#000000;}
 </style>
