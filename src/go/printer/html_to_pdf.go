@@ -34,19 +34,22 @@ p {margin: 0; padding: 0; text-align: center; white-space:break-spaces}
 .ft16{font-size:34px;font-family:AAAAAA+GlacialIndifference;color:#000000;}
 </style>
 </head>
-<body bgcolor="#E3E9F4" vlink="blue" link="blue" >
-<div id="page1-div" style="margin:0; border: 0;width:370mm;height:261mm;position:relative">
+<body bgcolor="#E3E9F4" vlink="blue" link="blue" style="width:297mm; height:208mm" >
+<div id="page1-div" style="display:flex; justify-content:space-around; margin:0; border: 0;width:295mm;height:207mm;position:relative">
+
+<img style="position:absolute;top:10mm;right:10mm;width:100mm" src="resources/right_leaf.png" alt="leaf" />
+<img style="position:absolute;bottom:10mm;left:10mm;width:100mm" src="resources/left_leaf.png" alt="leaf" />
 
 {{ range $i, $p := .Photos }}
 
 {{ if $p.Photo_id }}
 {{ if eq $i 0 }} 
-<div class="vignetta" style="position:absolute;top:20mm;left:20mm;">
+<div class="vignetta" style="">
 {{ else }}
-<div class="vignetta" style="position:absolute;bottom:20mm;right:20mm;">
+<div class="vignetta" style="align-self:flex-end">
 {{ end }}
 
-<img style="max-width:160mm;max-height:160mm" src="{{ $p.Location }}" alt="img0"/>
+<img style="max-width:140mm;max-height:140mm" src="{{ $p.Location }}" alt="img0"/>
 <p>{{ $p.Description }}</p>
 <p>-- {{ $p.Author }} --</p>
 
@@ -54,8 +57,6 @@ p {margin: 0; padding: 0; text-align: center; white-space:break-spaces}
 {{ end }}
 {{ end }}
 
-<img style="position:absolute;top:10mm;right:10mm;width:100mm" src="resources/right_leaf.png" alt="leaf" />
-<img style="position:absolute;bottom:10mm;left:10mm;width:100mm" src="resources/left_leaf.png" alt="leaf" />
 </div>
 </body>
 </html>
