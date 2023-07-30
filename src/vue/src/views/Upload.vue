@@ -42,6 +42,7 @@
           <textarea
             cols="40"
             rows="5"
+            maxlength="200"
             v-model="description"
             class="form-description"
           />
@@ -50,7 +51,7 @@
       <div class="form-group">
         <label
           >Your name:
-          <input type="text" v-model="author" class="form-author" />
+          <input type="text" v-model="author" maxlength="25" class="form-author" />
         </label>
       </div>
     </div>
