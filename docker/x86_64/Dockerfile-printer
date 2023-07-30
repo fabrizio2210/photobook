@@ -4,7 +4,7 @@ COPY src/go /usr/src/app
 
 WORKDIR /usr/src/app/printer
 
-RUN apt update && apt install -y poppler-utils && apt clean
+RUN apt update && apt install -y poppler-utils fonts-noto-color-emoji chromium && apt clean
 
 RUN go build
 

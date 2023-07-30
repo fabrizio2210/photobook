@@ -4,6 +4,6 @@ WORKDIR /usr/src/app/printer
 
 RUN go install github.com/githubnemo/CompileDaemon@latest
 
-RUN apt update && apt install -y poppler-utils chromium && apt clean
+RUN apt update && apt install -y poppler-utils chromium fonts-noto-color-emoji && apt clean
 
 CMD CompileDaemon -command="./Printer"
