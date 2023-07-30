@@ -6,6 +6,7 @@ import (
   "encoding/json"
   "image"
   "image/jpeg"
+  _ "image/png"
   "io/ioutil"
   "log"
   "net/http"
