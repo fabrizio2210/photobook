@@ -5,9 +5,9 @@ import (
 
     "Api/controllers"
     "Api/routes"
-    "Api/db"
-    "Api/filemanager"
-    "Api/rediswrapper"
+    "Lib/db"
+    "Lib/filemanager"
+    "Lib/rediswrapper"
 
     "github.com/gin-gonic/gin"
 )
@@ -21,8 +21,7 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
-  filemanager.SetUploadFolder(os.Getenv("STATIC_FILES_PATH"))
-  filemanager.SetFullQualityFolder(os.Getenv("STATIC_FILES_PATH"))
+  filemanager.Init()
   rediswrapper.RedisClient = rediswrapper.ConnectRedis(os.Getenv("REDIS_HOST") + ":6379")
   db.DB = db.ConnectDB()
   controllers.GuestApiURL = os.Getenv("GUEST_API_URL")

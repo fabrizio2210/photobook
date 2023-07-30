@@ -1,7 +1,7 @@
 package filemanager
 
 import (
-  "Api/models"
+  "Lib/models"
 
   "log"
   "os"
@@ -10,6 +10,11 @@ import (
 var staticPathUrl = "/static/"
 var fullQualityFolder = "/tmp/"
 var uploadFolder = "/tmp/"
+
+func Init() {
+  SetUploadFolder(os.Getenv("STATIC_FILES_PATH"))
+  SetFullQualityFolder(os.Getenv("STATIC_FILES_PATH"))
+}
 
 func GetFileName(id string) string {
   return id + ".jpg"

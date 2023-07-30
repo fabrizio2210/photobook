@@ -3,9 +3,10 @@ module Api
 go 1.18
 
 require (
-	Api/db v0.0.0-00010101000000-000000000000
-	Api/models v0.0.0-00010101000000-000000000000
-	Api/rediswrapper v0.0.0-00010101000000-000000000000
+	Lib/db v0.0.0-00010101000000-000000000000
+	Lib/models v0.0.0-00010101000000-000000000000
+	Lib/rediswrapper v0.0.0-00010101000000-000000000000
+	Lib/filemanager v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/google/uuid v1.3.0
@@ -70,8 +71,9 @@ require (
 )
 
 replace (
-	Api/db => ../lib/db
-	Api/models => ../lib/models
-	Api/rediswrapper => ../lib/rediswrapper
+	Lib/db => ../lib/db
+	Lib/models => ../lib/models
+	Lib/rediswrapper => ../lib/rediswrapper
+	Lib/filemanager => ../lib/filemanager
 	github.com/fabrizio2210/photobook => ../lib/github.com/fabrizio2210/photobook
 )

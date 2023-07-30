@@ -2,9 +2,12 @@ package main
 
 import (
   "context"
-  "Printer/db"
-  "Printer/models"
   "log"
+  "os"
+
+  "Printer/db"
+  "Lib/models"
+  "Lib/filemanager"
 
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
@@ -64,6 +67,7 @@ func convertEventsToLayout(events []models.PhotoEvent) []*[2]models.PhotoEvent {
 func main() {
   db.DB = db.ConnectDB()
   EventCollection := db.GetCollection("events")
+  filemanager.Init()
 
   opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
   cursor, err := EventCollection.Find(ctx, bson.D{}, opts)
@@ -81,4 +85,5 @@ func main() {
   for _, page := range layout{
     log.Printf("Page:%+v", *page)
   }
+  printToPDF(os.Getenv("STATIC_FILES_PATH") + "/download.pdf", layout)
 }

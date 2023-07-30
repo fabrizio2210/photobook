@@ -13,10 +13,10 @@ import (
   "strings"
   "time"
 
-  "Api/filemanager"
-  "Api/models"
+  "Lib/filemanager"
+  "Lib/models"
   "Api/responses"
-  "Api/rediswrapper"
+  "Lib/rediswrapper"
 
   photopb "github.com/fabrizio2210/photobook"
   orientation "github.com/takumakei/exif-orientation"

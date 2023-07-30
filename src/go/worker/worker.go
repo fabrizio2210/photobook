@@ -2,8 +2,8 @@ package main
 
 import (
     "context"
-    "Worker/db"
-    "Worker/models"
+    "Lib/db"
+    "Lib/models"
     "encoding/json"
     "log"
     "os"
