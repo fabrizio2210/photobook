@@ -44,6 +44,23 @@ type GuestApiResponse struct {
   Guest GuestStruct `json="guest"`
 }
 
+func truncateText(str string, length int) string {
+    if length <= 0 {
+        return ""
+    }
+
+    truncated := ""
+    count := 0
+    for _, char := range str {
+    truncated += string(char)
+        count++
+        if count >= length {
+            break
+        }
+    }
+    return truncated
+}
+
 func allowedExtensions(filename string) bool {
   exts := [3]string{"jpg", "jpeg","png"}
   result := false
@@ -451,8 +468,8 @@ func PostNewPhoto() gin.HandlerFunc {
       log.Fatal(err)
     }
 
-    truncateAuthor := data.Author[:20]
-    truncateDescription := data.Description[:200]
+    truncateAuthor := truncateText(data.Author, 20)
+    truncateDescription := truncateText(data.Description, 200)
     // Enque the photo for the worker.
     newPhoto := &photopb.PhotoIn{
       AuthorId: &data.Author_id,
