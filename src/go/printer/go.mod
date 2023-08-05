@@ -3,9 +3,10 @@ module Printer
 go 1.18
 
 require (
-	Printer/db v0.0.0-00010101000000-000000000000 // indirect
-	Lib/models v0.0.0-00010101000000-000000000000 // indirect
 	Lib/filemanager v0.0.0-00010101000000-000000000000
+	Lib/models v0.0.0-00010101000000-000000000000 // indirect
+	Lib/rediswrapper v0.0.0-00010101000000-000000000000
+	Printer/db v0.0.0-00010101000000-000000000000 // indirect
 	github.com/chromedp/cdproto v0.0.0-20230722233645-dbf72f61037f // indirect
 	github.com/chromedp/chromedp v0.9.1 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
@@ -31,9 +32,16 @@ require (
 
 require github.com/fabrizio2210/photobook v0.0.0-00010101000000-000000000000
 
+require (
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
+)
+
 replace (
-	Printer/db => ../lib/db
-	Lib/models => ../lib/models
 	Lib/filemanager => ../lib/filemanager
+	Lib/models => ../lib/models
+	Lib/rediswrapper => ../lib/rediswrapper
+	Printer/db => ../lib/db
 	github.com/fabrizio2210/photobook => ../lib/github.com/fabrizio2210/photobook
 )

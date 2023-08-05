@@ -141,6 +141,7 @@ services:
     environment:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+      REDIS_HOST: redis
       STATIC_FILES_PATH: /static_files
     volumes:
       - ../../src/go/:/usr/src/app

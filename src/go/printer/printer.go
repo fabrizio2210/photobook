@@ -8,6 +8,7 @@ import (
   "Printer/db"
   "Lib/models"
   "Lib/filemanager"
+  "Lib/rediswrapper"
 
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
@@ -65,25 +66,32 @@ func convertEventsToLayout(events []models.PhotoEvent) []*[2]models.PhotoEvent {
 }
 
 func main() {
+  rediswrapper.RedisClient = rediswrapper.ConnectRedis(os.Getenv("REDIS_HOST") + ":6379")
   db.DB = db.ConnectDB()
   EventCollection := db.GetCollection("events")
   filemanager.Init()
 
-  opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
-  cursor, err := EventCollection.Find(ctx, bson.D{}, opts)
-  if err != nil {
-    panic(err)
-  }
-  events := []models.PhotoEvent{}
-  if err = cursor.All(ctx, &events); err != nil {
-    panic(err)
-  }
+  for {
+    _, err := rediswrapper.WaitFor("in_print")
+    if err != nil {
+        panic(err)
+    }
+    opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
+    cursor, err := EventCollection.Find(ctx, bson.D{}, opts)
+    if err != nil {
+      panic(err)
+    }
+    events := []models.PhotoEvent{}
+    if err = cursor.All(ctx, &events); err != nil {
+      panic(err)
+    }
 
 
-  layout := convertEventsToLayout(events)
-  log.Printf("Layout:%+v", layout)
-  for _, page := range layout{
-    log.Printf("Page:%+v", *page)
+    layout := convertEventsToLayout(events)
+    log.Printf("Layout:%+v", layout)
+    for _, page := range layout{
+      log.Printf("Page:%+v", *page)
+    }
+    printToPDF(os.Getenv("STATIC_FILES_PATH") + "/download.pdf", layout)
   }
-  printToPDF(os.Getenv("STATIC_FILES_PATH") + "/download.pdf", layout)
 }

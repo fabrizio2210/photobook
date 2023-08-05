@@ -158,7 +158,7 @@ func printToPDF(outputFile string, layout []*[2]models.PhotoEvent) {
   cmd.Stdout = &out
   err = cmd.Run()
   if err != nil {
-    log.Fatal(err)
+    log.Print(err)
   }
   log.Printf("Output: %s", out.String())
 }
