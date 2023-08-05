@@ -156,23 +156,30 @@ func blockUpload(c *gin.Context) bool {
   return false
 }
 
-func isEditor(ctx context.Context, id string) bool {
+func getGuest(ctx context.Context, id string) (*http.Response, error) {
   httpClient := http.Client{}
-  ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-  defer cancel()
   req, err := http.NewRequestWithContext(ctx,
                                          http.MethodGet,
                                          GuestApiURL + "/" + id, nil)
   if err != nil {
     log.Printf("Error in creating request:%v", err)
-    return false
+    return &http.Response{}, err
   }
   res, err := httpClient.Do(req)
   if err != nil {
     log.Printf("Error in doing request: %v",err)
+    return &http.Response{}, err
+  }
+  return res, nil
+}
+
+func isEditor(ctx context.Context, id string) bool {
+  ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+  defer cancel()
+  res, err := getGuest(ctx, id)
+  if err != nil {
     return false
   }
-
   switch res.StatusCode {
   case http.StatusOK:
     if res.Body != nil {

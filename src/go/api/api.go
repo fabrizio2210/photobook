@@ -17,6 +17,7 @@ func setupRouter() *gin.Engine {
   r := gin.Default()
   routes.PhotoRoute(r)
   routes.UidRoute(r)
+  routes.UserInfoRoute(r)
   routes.PrintRoute(r)
   return r
 }
