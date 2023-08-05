@@ -4,6 +4,7 @@ import (
     "context"
     "Lib/db"
     "Lib/models"
+    "Lib/rediswrapper"
     "encoding/json"
     "log"
     "os"
@@ -13,7 +14,6 @@ import (
     "io/ioutil"
     "time"
 
-    "github.com/go-redis/redis/v8"
     "github.com/golang/protobuf/proto"
     photopb "github.com/fabrizio2210/photobook"
 )
@@ -26,10 +26,6 @@ type NudityResponse struct {
 var  nudity_api_url = "https://api.apilayer.com/nudity_detection/upload"
 
 var ctx = context.Background()
-
-var redisClient = redis.NewClient(&redis.Options{
-    Addr: os.Getenv("REDIS_HOST") + ":6379",
-})
 
 func isNudity(payload []byte) bool{
   client := &http.Client {}
@@ -56,11 +52,12 @@ func isNudity(payload []byte) bool{
 func main() {
   log.Printf("NUDITY_APILAYER_KEY:%v", os.Getenv("NUDITY_APILAYER_KEY"))
   db.DB = db.ConnectDB()
+  rediswrapper.RedisClient = rediswrapper.ConnectRedis(os.Getenv("REDIS_HOST") + ":6379")
 
   rand.Seed(time.Now().UnixNano())
 
   for {
-    msg, err := redisClient.BLPop(ctx, 0, "in_photos").Result()
+    msg, err := rediswrapper.WaitFor("in_photos")
     if err != nil {
         panic(err)
     }
@@ -98,7 +95,7 @@ func main() {
         panic(err)
       }
       // Notify all the clients.
-      if err := redisClient.Publish(ctx, "sse", encodedJson).Err(); err != nil {
+      if err := rediswrapper.Publish("sse", encodedJson); err != nil {
           panic(err)
       }
     }

@@ -7,6 +7,7 @@ require google.golang.org/protobuf v1.26.0
 require (
 	Lib/db v0.0.0-00010101000000-000000000000 // indirect
 	Lib/models v0.0.0-00010101000000-000000000000 // indirect
+	Lib/rediswrapper v0.0.0-00010101000000-000000000000 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
@@ -32,5 +33,6 @@ require (
 replace (
 	Lib/db => ../lib/db
 	Lib/models => ../lib/models
+	Lib/rediswrapper => ../lib/rediswrapper
 	github.com/fabrizio2210/photobook => ../lib/github.com/fabrizio2210/photobook
 )

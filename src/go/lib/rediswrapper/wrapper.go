@@ -37,3 +37,11 @@ func Enque(queue string, data []byte) error{
   }
   return nil
 }
+
+func WaitFor(queue string) ([]string, error){
+  msg, err := RedisClient.BLPop(ctx, 0, queue).Result()
+  if err != nil {
+    panic(err)
+  }
+  return msg, nil
+}
