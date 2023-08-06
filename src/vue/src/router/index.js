@@ -4,6 +4,7 @@ import VueRouter from "vue-router";
 import HomePage from "../views/HomePage.vue";
 import Upload from "../views/Upload.vue";
 import Edit from "../views/Edit.vue";
+import Admin from "../views/Admin.vue";
 
 Vue.use(VueRouter);
 
@@ -22,6 +23,11 @@ const routes = [
     path: "/edit",
     name: "Edit",
     component: Edit
+  },
+  {
+    path: "/admin",
+    name: "Admin",
+    component: Admin
   },
   // otherwise redirect to home
   { path: "*", redirect: "/" }
