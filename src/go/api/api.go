@@ -19,6 +19,7 @@ func setupRouter() *gin.Engine {
   routes.UidRoute(r)
   routes.UserInfoRoute(r)
   routes.PrintRoute(r)
+  routes.AdminRoute(r)
   return r
 }
 
@@ -31,4 +32,3 @@ func main() {
   router := setupRouter()
   router.Run("0.0.0.0:5000")
 }
-

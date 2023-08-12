@@ -498,3 +498,4 @@ func PostNewPhoto() gin.HandlerFunc {
 
   }
 }
+

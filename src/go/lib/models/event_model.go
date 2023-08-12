@@ -26,3 +26,8 @@ type PhotoInputForm struct {
 func (e *PhotoEvent) StripPrivateInfo() {
   e.Author_id = ""
 }
+
+type MessageEvent struct {
+  Message string `json:"message"`
+  Type string `json:"type"`
+}
