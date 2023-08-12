@@ -16,10 +16,10 @@ import (
 	"testing"
 
   "Api/responses"
-  "Api/rediswrapper"
+  "Lib/rediswrapper"
   "Api/controllers"
-  "Api/models"
-  "Api/db"
+  "Lib/models"
+  "Lib/db"
 
   photopb "github.com/fabrizio2210/photobook"
   "github.com/go-redis/redismock/v8"
