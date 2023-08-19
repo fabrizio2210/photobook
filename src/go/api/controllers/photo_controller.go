@@ -14,6 +14,7 @@ import (
   "strings"
   "time"
 
+  "Lib/db"
   "Lib/filemanager"
   "Lib/models"
   "Api/responses"
@@ -23,7 +24,6 @@ import (
   orientation "github.com/takumakei/exif-orientation"
   "github.com/gin-gonic/gin"
   "go.mongodb.org/mongo-driver/bson"
-  "go.mongodb.org/mongo-driver/mongo"
   "go.mongodb.org/mongo-driver/mongo/options"
   "github.com/go-playground/validator/v10"
   "github.com/golang/protobuf/proto"
@@ -31,7 +31,6 @@ import (
   "github.com/nfnt/resize"
 )
 
-var EventCollection *mongo.Collection
 var GuestApiURL string
 var validate = validator.New()
 
@@ -143,7 +142,7 @@ func maybeGetForm(c *gin.Context, data *models.PhotoInputForm) bool {
 }
 
 func blockUpload(c *gin.Context) bool {
-  if os.Getenv("BLOCK_UPLOAD") != "" {
+  if os.Getenv("BLOCK_UPLOAD") != ""  || db.IsUploadBlocked() {
     c.JSON(
       http.StatusUnauthorized,
       responses.Response{
@@ -213,10 +212,17 @@ func isEditor(ctx context.Context, id string) bool {
 }
 
 func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
+  if ctx.Value("write") == true {
+    // Block if edit/deletion.
+    if (blockUpload(c)) {
+      return nil
+    }
+  }
+
   var photo *models.PhotoEvent
   photoId := c.Param("photoId")
   opts := options.FindOne().SetSort(bson.D{{"timestamp", -1}})
-  err := EventCollection.FindOne(ctx,
+  err := db.EventCollection.FindOne(ctx,
     bson.M{"photo_id": photoId},
     opts).Decode(&photo)
   if err != nil {
@@ -228,12 +234,6 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
       },
     )
     return nil
-  }
-  if ctx.Value("write") == true {
-    // Block if edit/deletion.
-    if (blockUpload(c)) {
-      return nil
-    }
   }
   if ctx.Value("private") == true {
     // Do not authorize if is not the author or editor.
@@ -256,7 +256,7 @@ func insertEventDBAndPublish(ctx context.Context, c *gin.Context, event *models.
   event.Id = id.String()
   event.Timestamp = rediswrapper.GetCounter("events_count")
 
-  EventCollection.InsertOne(ctx, event)
+  db.EventCollection.InsertOne(ctx, event)
 
   // Preparing for the public audience.
   event.StripPrivateInfo()
@@ -352,7 +352,7 @@ func GetAllPhotoEvents() gin.HandlerFunc {
       }
     }
     opts := options.Find().SetSort(bson.D{{"timestamp", 1}})
-    cursor, err := EventCollection.Find(ctx, filter, opts)
+    cursor, err := db.EventCollection.Find(ctx, filter, opts)
     if err != nil {
       c.JSON(
         http.StatusNotFound,

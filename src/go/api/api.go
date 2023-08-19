@@ -28,7 +28,8 @@ func main() {
   rediswrapper.RedisClient = rediswrapper.ConnectRedis(os.Getenv("REDIS_HOST") + ":6379")
   db.DB = db.ConnectDB()
   controllers.GuestApiURL = os.Getenv("GUEST_API_URL")
-  controllers.EventCollection = db.GetCollection("events")
+  db.EventCollection = db.GetCollection("events")
+  db.StatusCollection = db.GetCollection("status")
   router := setupRouter()
   router.Run("0.0.0.0:5000")
 }

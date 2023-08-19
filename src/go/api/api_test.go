@@ -74,7 +74,7 @@ func TestGetEventRoute(t *testing.T) {
 
   mt.Run("GET single event success", func(mt *mtest.T) {
     db.DB = mt.Client
-    controllers.EventCollection = mt.Coll
+    db.EventCollection = mt.Coll
     source := models.PhotoEvent{
       Author:"author",
       Author_id:"abc-123-abc",
@@ -131,7 +131,8 @@ func TestPutSuccessEventRoute(t *testing.T) {
 
   mt.Run("PUT single event success", func(mt *mtest.T) {
     db.DB = mt.Client
-    controllers.EventCollection = mt.Coll
+    db.EventCollection = mt.Coll
+    db.StatusCollection = mt.Coll
     source := models.PhotoEvent{
       Author:"author",
       Author_id:"abc-123-abc",
@@ -149,7 +150,11 @@ func TestPutSuccessEventRoute(t *testing.T) {
     want.Author_id = ""
     want.Timestamp = 3
     want.Location = "/static/resized/abc-123.jpg"
-    first := mtest.CreateCursorResponse(1, "photobook.events", mtest.FirstBatch, bson.D{
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
+    photoEvent := mtest.CreateCursorResponse(1, "photobook.events", mtest.FirstBatch, bson.D{
       {Key: "Author", Value: source.Author},
       {Key: "Author_id", Value: source.Author_id},
       {Key: "Description", Value: source.Description},
@@ -160,7 +165,7 @@ func TestPutSuccessEventRoute(t *testing.T) {
       {Key: "Timestamp", Value: source.Timestamp},
     })
     killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
-    mt.AddMockResponses(first, killCursors)
+    mt.AddMockResponses(unblocked, killCursors, photoEvent, killCursors)
     expectedSse, _ := json.Marshal(want)
     data := []byte(`{"description": "` + want.Description +`"}`)
     var redisMock redismock.ClientMock
@@ -198,7 +203,8 @@ func TestPutSuccessEditorEventRoute(t *testing.T) {
 
   mt.Run("PUT single event success", func(mt *mtest.T) {
     db.DB = mt.Client
-    controllers.EventCollection = mt.Coll
+    db.EventCollection = mt.Coll
+    db.StatusCollection = mt.Coll
     source := models.PhotoEvent{
       Author:"author",
       Author_id:"abc-123-abc",
@@ -226,8 +232,12 @@ func TestPutSuccessEditorEventRoute(t *testing.T) {
       {Key: "Photo_id", Value: source.Photo_id},
       {Key: "Timestamp", Value: source.Timestamp},
     })
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
     killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
-    mt.AddMockResponses(first, killCursors)
+    mt.AddMockResponses(unblocked, killCursors, first, killCursors)
     expectedSse, _ := json.Marshal(want)
     data := []byte(`{"description": "` + want.Description +`"}`)
     var redisMock redismock.ClientMock
@@ -264,7 +274,8 @@ func TestPutForbiddenEventRoute(t *testing.T) {
 
   mt.Run("PUT single event failure", func(mt *mtest.T) {
     db.DB = mt.Client
-    controllers.EventCollection = mt.Coll
+    db.EventCollection = mt.Coll
+    db.StatusCollection = mt.Coll
     source := models.PhotoEvent{
       Author:"author",
       Author_id:"abc-123-abc",
@@ -292,8 +303,12 @@ func TestPutForbiddenEventRoute(t *testing.T) {
       {Key: "Photo_id", Value: source.Photo_id},
       {Key: "Timestamp", Value: source.Timestamp},
     })
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
     killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
-    mt.AddMockResponses(first, killCursors)
+    mt.AddMockResponses(unblocked, killCursors, first, killCursors)
     expectedSse, _ := json.Marshal(want)
     data := []byte(`{"description": "` + want.Description +`"}`)
     var redisMock redismock.ClientMock
@@ -312,6 +327,8 @@ func TestPutForbiddenEventRoute(t *testing.T) {
 func TestPostPhotoRoute(t *testing.T) {
   gin.SetMode(gin.TestMode)
 	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
   pr, pw := io.Pipe()
   writer := multipart.NewWriter(pw)
   uuid.SetRand(rand.New(rand.NewSource(1)))
@@ -357,7 +374,18 @@ func TestPostPhotoRoute(t *testing.T) {
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("POST", "/api/new_photo", pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
-  router.ServeHTTP(w, req)
+  mt.Run("POST photo", func(mt *mtest.T) {
+    db.DB = mt.Client
+    db.StatusCollection = mt.Coll
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(unblocked, killCursors)
+
+    router.ServeHTTP(w, req)
+  })
 
   assert.Equal(t, 200, w.Code)
 }

@@ -36,6 +36,8 @@ func ConnectDB() *mongo.Client  {
 
 //Client instance
 var DB *mongo.Client
+var EventCollection *mongo.Collection
+var StatusCollection *mongo.Collection
 
 func GetCollection(collectionName string) *mongo.Collection {
   collection := DB.Database(os.Getenv("DB_NAME")).Collection(collectionName)
@@ -45,18 +47,17 @@ func GetCollection(collectionName string) *mongo.Collection {
 func BlockUpload() error{
   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   defer cancel()
-  collection := DB.Database(os.Getenv("DB_NAME")).Collection("status")
   block := models.Status{
     Id: "block_upload",
     Value: true,
   }
-  result, err := collection.ReplaceOne(ctx, bson.D{{"id", "block_upload"}}, block)
+  result, err := StatusCollection.ReplaceOne(ctx, bson.D{{"id", "block_upload"}}, block)
   if err != nil {
     log.Println(err)
     return(err)
   }
   if result.MatchedCount == 0 {
-    _, err = collection.InsertOne(ctx, block)
+    _, err = StatusCollection.InsertOne(ctx, block)
     if err != nil {
       log.Println(err)
       return(err)
@@ -68,18 +69,17 @@ func BlockUpload() error{
 func UnblockUpload() error{
   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   defer cancel()
-  collection := DB.Database(os.Getenv("DB_NAME")).Collection("status")
   unblock := models.Status{
     Id: "block_upload",
     Value: false,
   }
-  result, err := collection.ReplaceOne(ctx, bson.D{{"id", "block_upload"}}, unblock)
+  result, err := StatusCollection.ReplaceOne(ctx, bson.D{{"id", "block_upload"}}, unblock)
   if err != nil {
     log.Println(err)
     return(err)
   }
   if result.MatchedCount == 0 {
-    _, err = collection.InsertOne(ctx, unblock)
+    _, err = StatusCollection.InsertOne(ctx, unblock)
     if err != nil {
       log.Println(err)
       return(err)
@@ -89,12 +89,11 @@ func UnblockUpload() error{
 }
 
 func IsUploadBlocked() bool{
-  collection := DB.Database(os.Getenv("DB_NAME")).Collection("status")
   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   defer cancel()
 
   var result models.Status
-  err := collection.FindOne(ctx,
+  err := StatusCollection.FindOne(ctx,
     bson.M{"id": "block_upload"}).Decode(&result)
     
   if err != nil {
