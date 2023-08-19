@@ -390,3 +390,68 @@ func TestPostPhotoRoute(t *testing.T) {
   assert.Equal(t, 200, w.Code)
 }
 
+func TestPostPhotoBlockedRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
+  pr, pw := io.Pipe()
+  writer := multipart.NewWriter(pw)
+  uuid.SetRand(rand.New(rand.NewSource(1)))
+
+  decodedImage := make([]byte, base64.StdEncoding.DecodedLen(len(jpegImage)))
+  base64.StdEncoding.Decode(decodedImage, []byte(jpegImage))
+  unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
+  jpegImageBuf := bytes.NewBuffer([]byte{})
+  jpeg.Encode(jpegImageBuf, unflateImage, nil)
+  want := &photopb.PhotoIn{
+    Author: strPtr("author"),
+    AuthorId: strPtr("abc-123-abc"),
+    Description: strPtr("A description"),
+    Id: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+    Location: strPtr("/static/resized/9566c74d-1003-4c4d-bbbb-0407d1e2c649.jpg"),
+    Order: intPtr(23),
+    PhotoId: strPtr("9566c74d-1003-4c4d-bbbb-0407d1e2c649"),
+    Photo: jpegImageBuf.Bytes(),
+    Timestamp: intPtr(3),
+  }
+  marshaledWant, _ := proto.Marshal(want)
+  go func() {
+    defer writer.Close()
+    writer.WriteField("author_id", *want.AuthorId)
+    writer.WriteField("description", *want.Description)
+    writer.WriteField("author", *want.Author)
+    part, err := writer.CreateFormFile("file", "someimg.jpeg")
+    if err != nil {
+        t.Error(err)
+    }
+
+    part.Write(decodedImage)
+    if err != nil {
+        t.Error(err)
+    }
+  }()
+  var redisMock redismock.ClientMock
+  rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectIncr("photos_count").SetVal(23)
+  redisMock.ExpectIncr("events_count").SetVal(3)
+  redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
+  
+  w := httptest.NewRecorder()
+  req, _ := http.NewRequest("POST", "/api/new_photo", pr)
+  req.Header.Set("Content-Type", writer.FormDataContentType())
+  mt.Run("POST photo", func(mt *mtest.T) {
+    db.DB = mt.Client
+    db.StatusCollection = mt.Coll
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: true},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(unblocked, killCursors)
+
+    router.ServeHTTP(w, req)
+  })
+
+  assert.Equal(t, 401, w.Code)
+}
