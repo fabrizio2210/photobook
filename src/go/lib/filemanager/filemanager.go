@@ -20,6 +20,10 @@ func GetFileName(id string) string {
   return id + ".jpg"
 }
 
+func GetCoverLocation() string {
+  return fullQualityFolder + "/cover.pdf"
+}
+
 func LocationForClient(id string) string {
   return staticPathUrl + "resized/" + GetFileName(id)
 }

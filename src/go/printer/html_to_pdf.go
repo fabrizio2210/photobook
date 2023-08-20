@@ -146,6 +146,10 @@ func printToPDF(outputFile string, layout []*[2]models.PhotoEvent) {
   defer os.RemoveAll(tempDir)
 
   var intermediateFiles []string
+  _, err = os.Stat(filemanager.GetCoverLocation())
+  if ! os.IsNotExist(err) {
+    intermediateFiles = append (intermediateFiles, filemanager.GetCoverLocation())
+  }
   for i, page := range layout {
     intermediateFile := fmt.Sprintf("%s/%04d.pdf", tempDir, i)
     printSinglePDF(ctx, page, intermediateFile)

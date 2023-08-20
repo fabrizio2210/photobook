@@ -8,4 +8,5 @@ import (
 
 func AdminRoute(router *gin.Engine) {
   router.POST("/api/admin/toggle_upload", controllers.ToggleUpload())
+  router.POST("/api/admin/upload_cover", controllers.PostCover())
 }
