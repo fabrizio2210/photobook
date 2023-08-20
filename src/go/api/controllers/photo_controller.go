@@ -111,8 +111,8 @@ func maybeGetJson(c *gin.Context, data *models.PhotoInputJson) bool {
   return true
 }
 
-func maybeGetForm(c *gin.Context, data *models.PhotoInputForm) bool {
-  if err := c.Bind(&data); err != nil {
+func maybeGetForm(c *gin.Context, data any) bool {
+  if err := c.Bind(data); err != nil {
     log.Printf("Error in parsing: %v", err.Error())
     c.JSON(
       http.StatusBadRequest,
