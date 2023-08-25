@@ -100,26 +100,38 @@ export const photos = {
     },
     mergeEvent({ commit }, { evento }) {
       commit("mergePhotoEvents", [ evento ]);
+    },
+    resetError({ commit }) {
+      commit("resetError");
+    },
+    setError({ commit }, { msg }) {
+      commit("setError", msg);
     }
   },
   mutations: {
     getRequest(state) {
       state.all.loading = true;
+      state.status = {};
     },
     getAllRequest(state) {
       state.all.loading = true;
+      state.status = {};
     },
     deleteRequest(state) {
       state.all.loading = true;
+      state.status = {};
     },
     getAllSuccess(state, photos) {
+      state.status = {};
       mergeEvents(state.all.photos_list, photos);
       Vue.delete(state.all, "loading");
     },
     getOwnRequest(state) {
       state.all.loading = true;
+      state.status = {};
     },
     getSuccess(state, photo) {
+      state.status = {};
       mergeEvents(state.all.photos_list, [photo]);
       Vue.delete(state.all, "loading");
     },
@@ -128,10 +140,12 @@ export const photos = {
       Vue.delete(state.all, "loading");
     },
     getOwnSuccess(state, photos) {
+      state.status = {};
       mergeEvents(state.my.photos_list, photos);
       Vue.delete(state.all, "loading");
     },
     deleteSuccess(state, photo) {
+      state.status = {};
       mergeEvents(state.all.photos_list, [photo]);
       mergeEvents(state.my.photos_list, [photo]);
       Vue.delete(state.all, "loading");
@@ -154,6 +168,7 @@ export const photos = {
       }
     },
     editSuccess(state, photo) {
+      state.status = {};
       for (var i = 0; i < state.my.photos_list.length; i++) {
         if (state.my.photos_list[i].photo_id == photo.photo_id) {
           Vue.set(state.my.photos_list, i, photo);
@@ -191,13 +206,22 @@ export const photos = {
       }
     },
     getAllFailure(state, error) {
+      state.status = { error};
       state.all = { error };
     },
     getOwnFailure(state, error) {
+      state.status = { error};
       state.all = { error };
     },
     editFailure(state, error) {
+      state.status = { error};
       state.all = { error };
+    },
+    resetError(state) {
+      state.status = { };
+    },
+    setError(state, error) {
+      state.status = { error };
     },
     getFailure(state, error) {
       if (error.error == "Item not found.") {
@@ -209,10 +233,12 @@ export const photos = {
         Vue.delete(state.all, "loading");
       } else {
         state.all = { error };
+        state.status = { error};
       }
     },
     deleteFailure(state, error) {
       state.all = { error };
+      state.status = { error};
     }
   }
 };

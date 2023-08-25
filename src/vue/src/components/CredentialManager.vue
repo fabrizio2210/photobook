@@ -28,6 +28,10 @@ export default {
       console.log("SSE:", evento);
       this.$store.dispatch("photos/mergeEvent", {evento});
     },
+    handleUploadError(msg) {
+      console.log("Error received from SSE:", msg);
+      this.$store.dispatch("photos/setError", {msg});
+    },
     populatePhotos() {
       this.$store.dispatch("photos/getAll");
     },
@@ -46,6 +50,7 @@ export default {
     this.$sse
       .create("/api/notifications/" + this.auth.user.uid)
       .on("photo", this.handlePhotoEvents)
+      .on("error_upload", this.handleUploadError)
       .on("error", err =>
         console.error("Failed to parse or lost connection:", err)
       )

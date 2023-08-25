@@ -1,7 +1,7 @@
 <template>
   <div class="upload">
     <h2>Upload here your photo</h2>
-    <div class="buttons-upload">
+    <div class="buttons-upload" >
       <UploadImage
         class="btn-primary"
         post-action="/api/new_photo"
@@ -19,7 +19,8 @@
             <img class="image-thumb" v-if="file.thumb" :src="file.thumb" />
           </div>
           <div>{{ formatSize(file.size) }}</div>
-          <div class="transfer-status-error" v-if="file.error">{{ errorMessage(file) }}</div>
+          <div class="transfer-status-error" v-if="status.error">{{ status.error }}</div>
+          <div class="transfer-status-error" v-else-if="file.error">{{ errorMessage(file) }}</div>
           <div class="transfer-status-complete" v-else-if="file.success">
             done, click on the image to change it
           </div>
@@ -91,7 +92,11 @@ export default {
       files: []
     };
   },
-
+  watch: {
+    files() {
+     this.resetError();
+    }
+  },
   computed: {
     stored_author() {
       if (this.$store.state.authentication.user) {
@@ -100,6 +105,9 @@ export default {
         }
       }
       return "";
+    },
+    status() {
+      return this.$store.state.photos.status;
     },
     uid() {
       if (this.$store.state.authentication.user) {
@@ -169,6 +177,9 @@ export default {
         return (size / 1024).toFixed(2) + " KB";
       }
       return size.toString() + " B";
+    },
+    resetError() {
+      this.$store.dispatch("photos/resetError");
     }
   },
   mounted() {

@@ -86,7 +86,7 @@ func main() {
       db.DiscardPhoto(photo_in)
       wrappedJson, err := json.Marshal(models.MessageEvent{
         Message: "Your photo contained nudity, it was discarded.",
-        Type: "error",
+        Type: "error_upload",
         Channel: *photo_in.AuthorId,
       })
       if err != nil {
