@@ -39,33 +39,13 @@ export default {
       return this.$store.state.photos.all;
     },
   },
-  sse: {
-    cleanup: true
-  },
   methods: {
-    populatePhotos() {
-      this.$store.dispatch("photos/getAll");
-    },
     imgError(id) {
       this.$store.dispatch("photos/get", { id });
-    },
-    handlePhotoEvents(msg) {
-      const evento = JSON.parse(msg);
-      console.log("SSE:", evento);
-      this.$store.dispatch("photos/mergeEvent", {evento});
     }
   },
   mounted() {
-    this.populatePhotos();
     this.vueInsomnia().on();
-    this.$sse
-      .create("/api/notifications")
-      .on("photo", this.handlePhotoEvents)
-      .on("error", err =>
-        console.error("Failed to parse or lost connection:", err)
-      )
-      .connect()
-      .catch(err => console.error("Failed make initial connection:", err));
   },
   destroyed() {
     this.vueInsomnia().off();

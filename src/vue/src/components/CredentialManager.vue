@@ -23,6 +23,14 @@ export default {
     async getUid() {
       this.$store.dispatch("authentication/get_uid");
     },
+    handlePhotoEvents(msg) {
+      const evento = JSON.parse(msg);
+      console.log("SSE:", evento);
+      this.$store.dispatch("photos/mergeEvent", {evento});
+    },
+    populatePhotos() {
+      this.$store.dispatch("photos/getAll");
+    },
     setUid(id) {
       this.$store.dispatch("authentication/set_uid", {id});
     }
@@ -34,6 +42,18 @@ export default {
     if (!this.auth.user || !this.auth.user.uid) {
       this.getUid();
     }
+    this.populatePhotos();
+    this.$sse
+      .create("/api/notifications")
+      .on("photo", this.handlePhotoEvents)
+      .on("error", err =>
+        console.error("Failed to parse or lost connection:", err)
+      )
+      .connect()
+      .catch(err => console.error("Failed make initial connection:", err));
+  },
+  sse: {
+    cleanup: true
   }
 };
 </script>
