@@ -20,9 +20,6 @@ export default {
   },
 
   methods: {
-    getUid() {
-      this.$store.dispatch("authentication/get_uid");
-    },
     handlePhotoEvents(msg) {
       const evento = JSON.parse(msg);
       console.log("SSE:", evento);
@@ -31,22 +28,17 @@ export default {
     handleUploadError(msg) {
       console.log("Error received from SSE:", msg);
       this.$store.dispatch("photos/setError", {msg});
-    },
-    populatePhotos() {
-      this.$store.dispatch("photos/getAll");
-    },
-    setUid(id) {
-      this.$store.dispatch("authentication/set_uid", {id});
     }
   },
-  mounted() {
+  async mounted() {
+    this.$store.dispatch("photos/getAll");
     if (typeof this.$route.query.id != "undefined") {
-      this.setUid(this.$route.query.id);
+      const id = this.$route.query.id;
+      this.$store.dispatch("authentication/set_uid", {id});
     }
     if (!this.auth.user || !this.auth.user.uid) {
-      this.getUid();
+       await this.$store.dispatch("authentication/get_uid");
     }
-    this.populatePhotos();
     this.$sse
       .create("/api/notifications/" + this.auth.user.uid)
       .on("photo", this.handlePhotoEvents)

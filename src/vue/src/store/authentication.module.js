@@ -8,8 +8,8 @@ export const authentication = {
   namespaced: true,
   state: initialState,
   actions: {
-    get_uid({ commit }) {
-      uidService.getUid().then(uid => {
+    async get_uid({ commit }) {
+      return uidService.getUid().then(uid => {
         commit("set_uid", uid["uid"]);
       });
     },
