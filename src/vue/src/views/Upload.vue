@@ -22,7 +22,8 @@
           <div class="transfer-status-error" v-if="status.error">{{ status.error }}</div>
           <div class="transfer-status-error" v-else-if="file.error">{{ errorMessage(file) }}</div>
           <div class="transfer-status-complete" v-else-if="file.success">
-            done, click on the image to change it
+            done, the picture will be published ina few seconds.
+            Click on the image to change it
           </div>
           <div class="transfer-status" v-else-if="file.active">
             transfer <img src="../assets/loading.gif" />
