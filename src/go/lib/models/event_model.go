@@ -30,4 +30,5 @@ func (e *PhotoEvent) StripPrivateInfo() {
 type MessageEvent struct {
   Message string `json:"message"`
   Type string `json:"type"`
+  Channel string `json:"channel, omitempty"`
 }

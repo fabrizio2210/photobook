@@ -84,6 +84,18 @@ func main() {
 
     if (nudityAnswer) {
       db.DiscardPhoto(photo_in)
+      wrappedJson, err := json.Marshal(models.MessageEvent{
+        Message: "Your photo contained nudity, it was discarded.",
+        Type: "error",
+        Channel: *photo_in.AuthorId,
+      })
+      if err != nil {
+        panic(err)
+      }
+      // Notify just that client.
+      if err := rediswrapper.Publish("sse", wrappedJson); err != nil {
+          panic(err)
+      }
     } else {
       db.AcceptPhoto(photo_in)
       // Omitting AuthorId on purpose.
@@ -100,8 +112,12 @@ func main() {
       if err != nil {
         panic(err)
       }
+      wrappedJson, err := json.Marshal(models.MessageEvent{
+        Message: string(encodedJson),
+        Type: "photo",
+      })
       // Notify all the clients.
-      if err := rediswrapper.Publish("sse", encodedJson); err != nil {
+      if err := rediswrapper.Publish("sse", wrappedJson); err != nil {
           panic(err)
       }
     }

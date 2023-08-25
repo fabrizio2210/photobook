@@ -1,6 +1,6 @@
 FROM golang
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/sse
 
 RUN go install github.com/githubnemo/CompileDaemon@latest
 

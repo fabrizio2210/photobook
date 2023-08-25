@@ -160,7 +160,7 @@ services:
     environment:
       REDIS_HOST: redis
     volumes:
-      - ../../src/go/sse:/usr/src/app
+      - ../../src/go:/usr/src/app
     networks:
       - backends
 

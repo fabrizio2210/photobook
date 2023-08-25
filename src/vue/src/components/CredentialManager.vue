@@ -20,7 +20,7 @@ export default {
   },
 
   methods: {
-    async getUid() {
+    getUid() {
       this.$store.dispatch("authentication/get_uid");
     },
     handlePhotoEvents(msg) {
@@ -44,7 +44,7 @@ export default {
     }
     this.populatePhotos();
     this.$sse
-      .create("/api/notifications")
+      .create("/api/notifications/" + this.auth.user.uid)
       .on("photo", this.handlePhotoEvents)
       .on("error", err =>
         console.error("Failed to parse or lost connection:", err)

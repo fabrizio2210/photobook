@@ -3,10 +3,13 @@ package main
 
 import (
     "context"
+    "encoding/json"
     "fmt"
     "log"
     "net/http"
     "os"
+
+    "Lib/models"
 
     "github.com/go-redis/redis/v8"
     "github.com/alexandrevicenzi/go-sse"
@@ -18,11 +21,12 @@ var redisClient = redis.NewClient(&redis.Options{
   Addr: os.Getenv("REDIS_HOST") + ":6379",
 })
 
+var notificationRoot = "/api/notifications/"
 
 func main() {
   s := sse.NewServer(nil)
   defer s.Shutdown()
-  http.Handle("/api/notifications", s)
+  http.Handle(notificationRoot, s)
   go func() {
     subscriber := redisClient.Subscribe(ctx, "sse")
     for {
@@ -31,7 +35,15 @@ func main() {
       if err != nil {
         panic(err)
       }
-      s.SendMessage("", sse.NewMessage("", msg.Payload, "photo"))
+      var m models.MessageEvent
+      err = json.Unmarshal([]byte(msg.Payload), &m)
+      if err != nil {
+        panic(err)
+      }
+      if m.Channel != "" {
+        m.Channel = notificationRoot + m.Channel
+      }
+      s.SendMessage(m.Channel, sse.NewMessage("", m.Message, m.Type))
     }
   }()
   log.Println("Listening at :3000")

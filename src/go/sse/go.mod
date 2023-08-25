@@ -3,6 +3,7 @@ module fabrizio2210/Sse
 go 1.18
 
 require (
+	Lib/models v0.0.0-00010101000000-000000000000
 	github.com/alexandrevicenzi/go-sse v1.6.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
@@ -22,4 +23,8 @@ require (
 	github.com/valyala/fasthttp v1.44.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
+)
+
+replace (
+	Lib/models => ../lib/models
 )
