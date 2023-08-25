@@ -33,9 +33,14 @@ func isNudity(payload []byte) bool{
   req, err := http.NewRequest("POST", nudity_api_url, reader)
   req.Header.Set("apikey", os.Getenv("NUDITY_APILAYER_KEY"))
   if err != nil {
-    log.Println(err)
+    log.Printf("Error in creating the request to the nudity API server: %s", err)
+    return false
   }
   res, err := client.Do(req)
+  if err != nil {
+    log.Printf("Error in running the request to the nudity API server: %s", err)
+    return false
+  }
 	if res.Body != nil {
     defer res.Body.Close()
   }
@@ -43,7 +48,8 @@ func isNudity(payload []byte) bool{
 
   var nudity_response NudityResponse
   if err := json.Unmarshal(body, &nudity_response); err != nil {
-      panic(err)
+      log.Printf("Error while parsing the json from the nudity API server: %s. Body: \"%s\"", err, body)
+      return false
   }
   log.Printf("Response:%v\n", nudity_response)
   return int(nudity_response.Value) > 3
