@@ -31,7 +31,7 @@ func main() {
       if err != nil {
         panic(err)
       }
-      s.SendMessage("/api/notifications", sse.NewMessage("", msg.Payload, "photo"))
+      s.SendMessage("", sse.NewMessage("", msg.Payload, "photo"))
     }
   }()
   log.Println("Listening at :3000")
