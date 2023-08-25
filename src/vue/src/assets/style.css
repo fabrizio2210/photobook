@@ -38,6 +38,16 @@ label {
   font-size: 1.3em;
 }
 
+.transfer-status-error {
+  font-size: 1.3em;
+  background: red;
+}
+
+.transfer-status-complete {
+  font-size: 1.3em;
+  background: green;
+}
+
 #app {
   background-color: black;
   color: #e6e6e6;

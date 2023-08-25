@@ -8,7 +8,7 @@
         extensions="gif,jpg,jpeg,png,webp"
         accept="image/png,image/gif,image/jpeg,image/webp"
         :multiple="false"
-        :size="1024 * 1024 * 20"
+        :size="1024 * 1024 * max_size"
         ref="upload"
         @input-filter="inputFilter"
         v-model="files"
@@ -19,15 +19,12 @@
             <img class="image-thumb" v-if="file.thumb" :src="file.thumb" />
           </div>
           <div>{{ formatSize(file.size) }}</div>
-          <div class="transfer-status" v-if="file.error">{{ file.error }}</div>
-          <div class="transfer-status" v-else-if="file.success">
+          <div class="transfer-status-error" v-if="file.error">{{ errorMessage(file.error) }}</div>
+          <div class="transfer-status-complete" v-else-if="file.success">
             done, click on the image to change it
           </div>
           <div class="transfer-status" v-else-if="file.active">
             transfer <img src="../assets/loading.gif" />
-          </div>
-          <div class="transfer-status" v-else-if="!!file.error">
-            {{ file.error }}
           </div>
           <div class="transfer-status" v-else>
             click on the image to change it
@@ -87,6 +84,7 @@ export default {
   },
   data() {
     return {
+      max_size: 20,
       description: "",
       author: "",
       upload: {},
@@ -142,6 +140,13 @@ export default {
           newFile.thumb = newFile.blob;
         }
       }
+    },
+    errorMessage(err){
+      var msg = err;
+      if (err == "size") {
+        msg = "The image is too big to be upload, try with an image smaller than " + this.max_size + "MB."
+      }
+      return msg;
     },
     formatSize(size) {
       if (size > 1024 * 1024 * 1024 * 1024) {
