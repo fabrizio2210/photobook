@@ -4,6 +4,7 @@ import (
   "bytes"
   "context"
   "encoding/json"
+  "fmt"
   "image"
   "image/jpeg"
   _ "image/png"
@@ -60,11 +61,11 @@ func truncateText(str string, length int) string {
     }
     return truncated
 }
+var allowed_extensions = [3]string{"jpg", "jpeg","png"}
 
 func allowedExtensions(filename string) bool {
-  exts := [3]string{"jpg", "jpeg","png"}
   result := false
-  for _, ext := range exts {
+  for _, ext := range allowed_extensions {
     res := strings.HasSuffix(strings.ToLower(filename), ext)
     result = result || res
   }
@@ -89,8 +90,7 @@ func maybeGetJson(c *gin.Context, data *models.PhotoInputJson) bool {
       http.StatusBadRequest,
       responses.Response{
         Status: http.StatusBadRequest,
-        Message: "error",
-        Data: map[string]interface{}{"event": err.Error()},
+        Message: fmt.Sprintf("Error: %s", err.Error()),
       },
     )
     return false
@@ -102,8 +102,7 @@ func maybeGetJson(c *gin.Context, data *models.PhotoInputJson) bool {
       http.StatusBadRequest,
       responses.Response{
         Status: http.StatusBadRequest,
-        Message: "error",
-        Data: map[string]interface{}{"event": validationErr.Error()},
+        Message: fmt.Sprintf("Error %s", validationErr.Error()),
       },
     )
     return false
@@ -200,7 +199,7 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
       http.StatusNotFound,
       responses.Response{
         Status: http.StatusNotFound,
-        Message: "error", Data: map[string]interface{}{"event": err.Error()},
+        Message: fmt.Sprintf("Error: %s", err.Error()),
       },
     )
     return nil
@@ -212,7 +211,7 @@ func maybeGetPhoto(ctx context.Context, c *gin.Context) *models.PhotoEvent {
         http.StatusUnauthorized,
         responses.Response{
           Status: http.StatusUnauthorized,
-          Message: "Not authorized",
+          Message: "Not authorized.",
         },
       )
       return nil
@@ -328,7 +327,7 @@ func GetAllPhotoEvents() gin.HandlerFunc {
         http.StatusNotFound,
         responses.Response{
           Status: http.StatusNotFound,
-          Message: "error", Data: map[string]interface{}{"event": err.Error()},
+          Message: fmt.Sprintf("Error: %s", err.Error()),
         },
       )
       return
@@ -384,8 +383,7 @@ func PostNewPhoto() gin.HandlerFunc {
         http.StatusBadRequest,
         responses.Response{
           Status: http.StatusBadRequest,
-          Message: "error: no file found or too many",
-          Data: map[string]interface{}{"event": "no file found or too many"},
+          Message: "Error: no file found in the request.",
         },
       )
       return
@@ -398,8 +396,7 @@ func PostNewPhoto() gin.HandlerFunc {
         http.StatusBadRequest,
         responses.Response{
           Status: http.StatusBadRequest,
-          Message: "error: no file found or too many",
-          Data: map[string]interface{}{"event": "no file found or too many"},
+          Message: "Error: too many file found in the request.",
         },
       )
       return
@@ -411,7 +408,7 @@ func PostNewPhoto() gin.HandlerFunc {
         http.StatusBadRequest,
         responses.Response{
           Status: http.StatusBadRequest,
-          Message: "error: bad extension",
+          Message: fmt.Sprintf("Error: the \"%s\" file has a bad extension. It should one of the following \"%s\"", file.Filename, allowed_extensions),
           Data: map[string]interface{}{"event": "bad extension"},
         },
       )
