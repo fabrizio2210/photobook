@@ -3,6 +3,12 @@
     <div v-if="auth.user">
       <p>Logged in as: {{ auth.user.uid }}</p>
     </div>
+    <div class="closed-connection" v-if="closed_connection">
+      <p>Connection lost with the server, refresh the page</p>
+    </div>
+    <div class="connection-error" v-else-if="connection_error">
+      <p>Having connection issues. Reconnecting...</p>
+    </div>
   </div>
 </template>
 
@@ -10,7 +16,11 @@
 export default {
   name: "CredentialManager",
   data: function() {
-    return {};
+    return {
+      sse_client: {},
+      closed_connection: false,
+      connection_error: false
+      };
   },
 
   computed: {
@@ -20,6 +30,9 @@ export default {
   },
 
   methods: {
+    isObjectEmpty(objectName) {
+      return Object.keys(objectName).length === 0;
+    },
     handlePhotoEvents(msg) {
       const evento = JSON.parse(msg);
       console.log("SSE:", evento);
@@ -28,6 +41,14 @@ export default {
     handleUploadError(msg) {
       console.log("Error received from SSE:", msg);
       this.$store.dispatch("photos/setError", {msg});
+    },
+    handleConnectionError(err) {
+      console.log("Failed to parse or lost connection:", err);
+      console.log("readyState:", this.sse_client.source.readyState);
+      this.connection_error = true;
+      if (this.sse_client.source.readyState == 2) {
+        this.closed_connection = true;
+      }
     }
   },
   async mounted() {
@@ -43,11 +64,11 @@ export default {
       .create("/api/notifications/" + this.auth.user.uid)
       .on("photo", this.handlePhotoEvents)
       .on("error_upload", this.handleUploadError)
-      .on("error", err =>
-        console.error("Failed to parse or lost connection:", err)
-      )
+      .on("error", this.handleConnectionError)
+      .on("open", () => { this.connection_error = false, this.closed_connetcion = false})
       .connect()
-      .catch(err => console.error("Failed make initial connection:", err));
+      .catch(err => console.error("Failed make initial connection:", err))
+      .then(client=>{ this.sse_client = client});
   },
   sse: {
     cleanup: true

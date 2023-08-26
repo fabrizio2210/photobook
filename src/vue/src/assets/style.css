@@ -48,6 +48,26 @@ label {
   background: green;
 }
 
+.closed-connection {
+  font-size: 1.3em;
+  background: red;
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.connection-error {
+  font-size: 1.3em;
+  color: black;
+  background: orange;
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+  
+
 #app {
   background-color: black;
   color: #e6e6e6;
