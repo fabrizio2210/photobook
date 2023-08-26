@@ -56,6 +56,7 @@ docker build -t fabrizio2210/photobook-frontend:${arch} -f docker/x86_64/Dockerf
 docker build -t fabrizio2210/photobook-sse:${arch} -f docker/x86_64/Dockerfile-sse .
 docker build -t fabrizio2210/photobook-worker:${arch} -f docker/x86_64/Dockerfile-worker .
 docker build -t fabrizio2210/photobook-api:${arch} -f docker/x86_64/Dockerfile-api .
+docker build -t fabrizio2210/photobook-printer:${arch} -f docker/x86_64/Dockerfile-printer .
 
 ######
 # Test
@@ -69,3 +70,4 @@ docker push fabrizio2210/photobook-frontend:${arch}
 docker push fabrizio2210/photobook-sse:${arch}
 docker push fabrizio2210/photobook-worker:${arch}
 docker push fabrizio2210/photobook-api:${arch}
+docker push fabrizio2210/photobook-printer:${arch}
