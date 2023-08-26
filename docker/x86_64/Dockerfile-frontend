@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y nginx \
 
 RUN apt remove -y nodejs nodejs-doc
 
+RUN echo "Package: nodejs" >> /etc/apt/preferences.d/preferences && \
+    echo "Pin: origin deb.nodesource.com" >> /etc/apt/preferences.d/preferences && \
+    echo "Pin-Priority: 1001" >> /etc/apt/preferences.d/preferences
+
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
 
