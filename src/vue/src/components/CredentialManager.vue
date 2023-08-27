@@ -30,8 +30,15 @@ export default {
   },
 
   methods: {
-    isObjectEmpty(objectName) {
-      return Object.keys(objectName).length === 0;
+    handleReconnection(msg) {
+      this.connection_error = false;
+      this.closed_connetcion = false;
+      this.$store.dispatch("photos/getAll");
+      console.log("Opening:", msg);
+    },
+    handleFailedconnection(err) {
+      this.closed_connetcion = true;
+      console.error("Failed make initial connection:", err);
     },
     handlePhotoEvents(msg) {
       const evento = JSON.parse(msg);
@@ -65,9 +72,9 @@ export default {
       .on("photo", this.handlePhotoEvents)
       .on("error_upload", this.handleUploadError)
       .on("error", this.handleConnectionError)
-      .on("open", () => { this.connection_error = false, this.closed_connetcion = false})
+      .on("open", this.handleReconnection)
       .connect()
-      .catch(err => console.error("Failed make initial connection:", err))
+      .catch(this.handleFailedconnection)
       .then(client=>{ this.sse_client = client});
   },
   sse: {
