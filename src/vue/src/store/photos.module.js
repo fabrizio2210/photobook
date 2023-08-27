@@ -2,17 +2,13 @@ import { photoService } from "../services";
 import Vue from "vue";
 
 function removePhotoFromList(list, photo) {
-  var found = false;
   for (var index in list) {
     if (list[index].photo_id == photo.photo_id) {
-      found = true;
-      break;
-    }
-  }
-  if (found) {
-    if (photo.timestamp > list[index].timestamp) {
-      console.log("Deleting from list=>", photo);
-      list.splice(index, 1);
+      if (photo.timestamp > list[index].timestamp) {
+        console.log("Deleting from list=>", photo);
+        list.splice(index, 1);
+        index--;
+      }
     }
   }
 }
