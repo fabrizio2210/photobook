@@ -22,7 +22,7 @@
           <div class="transfer-status-error" v-if="status.error">{{ status.error }}</div>
           <div class="transfer-status-error" v-else-if="file.error">{{ errorMessage(file) }}</div>
           <div class="transfer-status-complete" v-else-if="file.success">
-            done, the picture will be published ina few seconds.
+            done, the picture will be published in a few seconds.
             Click on the image to change it
           </div>
           <div class="transfer-status" v-else-if="file.active">
@@ -160,7 +160,9 @@ export default {
       }
       if (! this.isObjectEmpty(file.response)) {
         msg = file.response.message;
-        console.log("Writing from response");
+        if (!msg) {
+          msg = "Error, it was not possible to upload."
+        }
       }
       return msg;
     },

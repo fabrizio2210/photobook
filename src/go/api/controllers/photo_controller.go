@@ -112,11 +112,15 @@ func maybeGetJson(c *gin.Context, data *models.PhotoInputJson) bool {
 
 func blockUpload(c *gin.Context) bool {
   if os.Getenv("BLOCK_UPLOAD") != ""  || db.IsUploadBlocked() {
+    msg := os.Getenv("BLOCK_UPLOAD_MSG")
+    if msg == ""  {
+      msg = "The admin inhibited the upload."
+    }
     c.JSON(
       http.StatusUnauthorized,
       responses.Response{
         Status: http.StatusUnauthorized,
-        Message: os.Getenv("BLOCK_UPLOAD_MSG"),
+        Message: msg,
       },
     )
     return true
