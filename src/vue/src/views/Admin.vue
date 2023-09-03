@@ -16,12 +16,25 @@
           </button>
         </div>
       </div>
+      <div class="admin-row" >
+        <h3 class="label-btn">Is upload blocked:</h3>
+        <Switchbox
+          class="switchbox"
+          checkboxId="a"
+          :checked="admin.upload"
+          @changeCheck="toggleUpload(uid)"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import Switch from "@/components/Switch.vue";
 export default {
+  components: {
+    Switchbox: Switch
+  },
   data() {
     return {};
   },
@@ -39,11 +52,16 @@ export default {
     }
   },
   methods: {
+    toggleUpload(uid) {
+      this.$store.dispatch("admin/toggleUpload", { uid });
+    },
     askPrint(uid) {
       this.$store.dispatch("admin/askPrint", { uid });
     }
   },
-  mounted() {},
+  mounted() {
+    this.$store.dispatch("admin/getUpload");
+  },
   destroyed() {}
 };
 </script>

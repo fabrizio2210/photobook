@@ -19,6 +19,22 @@ import (
   "github.com/gin-gonic/gin"
 )
 
+func GetUpload() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    _, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    c.JSON(
+      http.StatusOK,
+      responses.Response{
+        Status: http.StatusOK,
+        Message: "success",
+        Data: map[string]interface{}{"upload_status": db.IsUploadBlocked()},
+      },
+    )
+  }
+}
+
 func ToggleUpload() gin.HandlerFunc {
   return func(c *gin.Context) {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

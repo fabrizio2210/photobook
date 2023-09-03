@@ -1,29 +1,51 @@
 import { adminService } from "../services";
+import Vue from "vue";
 
 export const admin = {
   namespaced: true,
   state: {
-    status: {}
+    print: {},
+    upload: true
   },
   actions: {
     askPrint({ commit }, { uid }) {
-      console.log(uid);
-      commit("askPrintLoading");
+      commit("loading");
       adminService.newPrint(uid).then(
-        print => commit("askPrintSuccess", print),
-        error => commit("askPrintFailure", error)
+        print => commit("setPrint", print),
+        error => commit("failure", error)
+      );
+    },
+    toggleUpload({ commit }, { uid }) {
+      commit("loading");
+      adminService.toggleUpload(uid).then(
+        upload => commit("setUpload", upload),
+        error => commit("failure", error)
+      );
+    },
+    getUpload({ commit }) {
+      commit("loading");
+      adminService.getUpload().then(
+        upload => commit("setUpload", upload),
+        error => commit("failure", error)
       );
     }
   },
   mutations: {
-    askPrintLoading(state) {
-      state.loading = true;
+    loading(state) {
+      Vue.set(state, "loading", true);
+      Vue.delete(state, "error");
     },
-    askPrintSuccess(state, print) {
-      state.status = { print };
-    },
-    askPrintFailure(state, error) {
+    failure(state, error) {
+      Vue.delete(state, "loading");
       state.error = { error };
+    },
+    setPrint(state, print) {
+      Vue.delete(state, "loading");
+      state.print = { print };
+    },
+    setUpload(state, upload) {
+      Vue.delete(state, "loading");
+      Vue.set(state,"upload", upload['upload_status']);
     }
   }
 };
