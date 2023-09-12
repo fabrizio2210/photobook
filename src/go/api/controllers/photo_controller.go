@@ -466,6 +466,7 @@ func PostNewPhoto() gin.HandlerFunc {
         log.Fatalln("Failed to encode address book:", err)
     }
     rediswrapper.Enque("in_photos", marshalledNewPhoto)
+    log.Printf("Enqueued \"%s\" photo in \"in_photos\"", photo_id_str)
 
   }
 }
