@@ -2,6 +2,7 @@ package rediswrapper
 
 import (
   "context"
+  "log"
 
   "github.com/go-redis/redis/v8"
 )
@@ -9,6 +10,7 @@ import (
 
 var RedisClient *redis.Client
 func ConnectRedis(address string) *redis.Client {
+  log.Printf("Connecting to \"%s\" for Redis", address)
   return redis.NewClient(&redis.Options{
     Addr: address,
   })
