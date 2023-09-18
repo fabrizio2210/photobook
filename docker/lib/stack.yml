@@ -52,6 +52,7 @@ services:
         traefik.frontend.rule: "PathPrefix(`/`)"
         traefik.http.services.frontend-service.loadbalancer.server.port: 80
         traefik.http.routers.frontend.rule: "PathPrefix(`/`)"
+    restart: always
     networks: 
       - backends
 
@@ -65,6 +66,7 @@ services:
         traefik.http.routers.frontendstatic.rule: "PathPrefix(`/static`)"
         traefik.http.routers.frontendstatic.middlewares: static-stripprefix
         traefik.http.middlewares.static-stripprefix.stripprefix.prefixes: /static
+    restart: always
     volumes:
       - static_files:/usr/share/nginx/html/
     networks: 
@@ -72,6 +74,7 @@ services:
 
   redis:
     image: redis
+    restart: always
     networks:
       - backends
 
@@ -91,6 +94,7 @@ services:
       REDIS_HOST: redis
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
+    restart: always
     volumes:
       - static_files:/static_files
     networks:
@@ -111,6 +115,7 @@ services:
       DB_NAME: photobook
       STATIC_FILES_PATH: /static_files
       GUEST_API_URL: https://have.been.to.it/api/guest
+    restart: always
     volumes:
       - static_files:/static_files
     networks:
@@ -122,6 +127,7 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
       STATIC_FILES_PATH: /static_files
+    restart: always
     volumes:
       - static_files:/static_files
     networks:
@@ -135,6 +141,7 @@ services:
         traefik.sse.rule: "PathPrefix(`/api/notifications`)"
         traefik.http.services.sse-service.loadbalancer.server.port: 3000
         traefik.http.routers.sse.rule: "PathPrefix(`/api/notifications`)"
+    restart: always
     environment:
       REDIS_HOST: redis
     networks:
