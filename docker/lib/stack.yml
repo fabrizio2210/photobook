@@ -86,6 +86,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: develop
     networks:
       - backends
+    volumes:
+      - db_data:/data/db
 
   worker:
     image: fabrizio2210/photobook-worker
@@ -127,6 +129,7 @@ services:
       DB_URL: mongodb://root:develop@mongo:27017/
       DB_NAME: photobook
       STATIC_FILES_PATH: /static_files
+      REDIS_HOST: redis
     restart: always
     volumes:
       - static_files:/static_files
@@ -144,6 +147,8 @@ services:
     restart: always
     environment:
       REDIS_HOST: redis
+    volumes:
+      - redis_data:/data
     networks:
       - backends
 
@@ -165,6 +170,8 @@ services:
 
 volumes:
   static_files:
+  db_data:
+  redis_data:
 
 networks:
   backends:
