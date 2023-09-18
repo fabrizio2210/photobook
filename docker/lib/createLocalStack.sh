@@ -7,4 +7,4 @@ docker build -t fabrizio2210/photobook-worker -f docker/x86_64/Dockerfile-worker
 docker build -t fabrizio2210/photobook-api -f docker/x86_64/Dockerfile-api .
 docker build -t fabrizio2210/photobook-sse -f docker/x86_64/Dockerfile-sse .
 docker build -t fabrizio2210/photobook-printer -f docker/x86_64/Dockerfile-printer .
-docker compose -f docker/lib/stack.yml  up
+docker compose -f docker/lib/stack.yml --env-file="/home/fabrizio/.docker/photobook-dev.env" up
