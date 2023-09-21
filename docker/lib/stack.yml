@@ -41,8 +41,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-      restart_policy:
-        condition: on-failure
+      restart: always
 
   vue:
     image: fabrizio2210/photobook-frontend
