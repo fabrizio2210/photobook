@@ -79,12 +79,12 @@ func orderPhotos(photos []models.PhotoEvent) {
   for i := range photos {
     date := readExifTimestamp(photos[i].Location)
     if date != 0 { 
-      photos[i].Timestamp = date
+      photos[i].Order = date
     }
   }
   // order by Timestamp
   sort.Slice(photos, func(i, j int) bool {
-    return photos[i].Timestamp < photos[j].Timestamp
+    return photos[i].Order < photos[j].Order
   })
 }
 
