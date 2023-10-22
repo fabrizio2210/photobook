@@ -421,22 +421,22 @@ func PostNewPhoto() gin.HandlerFunc {
 
     fl, _ := file.Open()
     flRead, _ := ioutil.ReadAll(fl)
+    log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
+    err = ioutil.WriteFile(
+      filemanager.PathToFullQualityFolder(photo_id_str),
+      flRead, os.ModePerm)
+    if err != nil {
+      log.Fatal(err)
+    }
+
     originalImage, _, err := image.Decode(bytes.NewReader(flRead))
     if (err != nil) {
       log.Printf("Error in decoding the image: %v", err.Error())
     }
-
     o, _ := orientation.Read(bytes.NewReader(flRead))
     originalImage = orientation.Normalize(originalImage, o)
     originalImageBuf := bytes.NewBuffer([]byte{})
     jpeg.Encode(originalImageBuf, originalImage, nil)
-    log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
-    err = ioutil.WriteFile(
-      filemanager.PathToFullQualityFolder(photo_id_str),
-      originalImageBuf.Bytes(), os.ModePerm)
-    if err != nil {
-      log.Fatal(err)
-    }
     resizedImage := resize.Thumbnail(900, 600, originalImage, resize.Lanczos3)
     imageBuf := bytes.NewBuffer([]byte{})
     jpeg.Encode(imageBuf, resizedImage, nil)
