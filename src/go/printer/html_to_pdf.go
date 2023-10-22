@@ -67,6 +67,7 @@ type contentPage struct {
 }
 
 func commandToPrintSinglePDF(urlstr string, res *[]byte) chromedp.Tasks {
+  // TODO compress images during print
 	return chromedp.Tasks{
 		chromedp.Navigate(urlstr),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -101,11 +102,6 @@ func printSinglePDF(ctx context.Context, page *[2]models.PhotoEvent, intermediat
   if err != nil {
     log.Fatal(err)
   }
-
-  for i := range page {
-    page[i].Location = filemanager.PathToFullQualityFolder(page[i].Photo_id)
-  }
-
 
   htmlFile := tempDir + "/page.html"
   content := contentPage{

@@ -4,12 +4,14 @@ import (
   "context"
   "log"
   "os"
+  "sort"
 
   "Printer/db"
   "Lib/models"
   "Lib/filemanager"
   "Lib/rediswrapper"
 
+  "github.com/rwcarlsen/goexif/exif"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
   "go.mongodb.org/mongo-driver/mongo/options"
@@ -37,10 +39,8 @@ func substitutePhoto(photos []models.PhotoEvent, event models.PhotoEvent) []mode
   return photos
 }
   
-
-func convertEventsToLayout(events []models.PhotoEvent) []*[2]models.PhotoEvent {
+func collapseEventsToPhotos(events []models.PhotoEvent) []models.PhotoEvent{
   var photos []models.PhotoEvent
-  layout := []*[2]models.PhotoEvent{}
 
   for _, event := range events {
     switch event.Event {
@@ -52,8 +52,46 @@ func convertEventsToLayout(events []models.PhotoEvent) []*[2]models.PhotoEvent {
      photos = substitutePhoto(photos, event)
     }
   }
+  // Add location
+  for i := range photos {
+    photos[i].Location = filemanager.PathToFullQualityFolder(photos[i].Photo_id)
+  }
+  return photos
+}
 
+func readExifTimestamp(location string) int64 {
+  log.Printf("Reading EXIF from %s", location)
+  f, err := os.Open(location)
+	if err != nil {
+		log.Printf("Impossible to open %s: %s", location, err)
+	}
+  x, err := exif.Decode(f)
+	if err != nil {
+		log.Printf("Impossible to decode EXIF for %s: %s", location, err)
+    return 0
+	}
+  tm, _ := x.DateTime()
+  return tm.Unix()
+}
+
+func orderPhotos(photos []models.PhotoEvent) {
+  // Populate timestamp based on EXIF
+  for i := range photos {
+    date := readExifTimestamp(photos[i].Location)
+    if date != 0 { 
+      photos[i].Timestamp = date
+    }
+  }
+  // order by Timestamp
+  sort.Slice(photos, func(i, j int) bool {
+    return photos[i].Timestamp < photos[j].Timestamp
+  })
+}
+
+func convertEventsToLayout(photos []models.PhotoEvent) []*[2]models.PhotoEvent {
+  layout := []*[2]models.PhotoEvent{}
   var page *[2]models.PhotoEvent
+
   for i, event := range photos {
     log.Printf("%+v", event) 
     if i%2 == 0 {
@@ -86,8 +124,9 @@ func main() {
       panic(err)
     }
 
-
-    layout := convertEventsToLayout(events)
+    photos := collapseEventsToPhotos(events)
+    orderPhotos(photos)
+    layout := convertEventsToLayout(photos)
     log.Printf("Layout:%+v", layout)
     for _, page := range layout{
       log.Printf("Page:%+v", *page)
