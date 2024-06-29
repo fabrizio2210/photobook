@@ -34,7 +34,7 @@ p {margin: 0; padding: 0; text-align: center; white-space:break-spaces; overflow
 .ft16{font-size:34px;font-family:AAAAAA+GlacialIndifference;color:#2c3e50;}
 </style>
 </head>
-<body bgcolor="#FFFF" vlink="blue" link="blue" style="width:297mm; height:208mm" >
+<body bgcolor="#FFFFFF" vlink="blue" link="blue" style="width:297mm; height:208mm" >
 <div id="page1-div" style="display:flex; justify-content:space-around; margin:0; border: 0;width:295mm;height:207mm;position:relative">
 
 <img style="position:absolute;top:10mm;right:10mm;width:100mm;z-index:0" src="resources/right_leaf.png" alt="leaf" />
