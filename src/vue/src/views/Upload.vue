@@ -26,7 +26,7 @@
             Click on the image to change it
           </div>
           <div class="transfer-status" v-else-if="file.active">
-            transfer <img src="../assets/loading.gif" />
+            {{ file.progress }}% transfered <img src="../assets/loading.gif" />
           </div>
           <div class="transfer-status" v-else>
             click on the image to change it
