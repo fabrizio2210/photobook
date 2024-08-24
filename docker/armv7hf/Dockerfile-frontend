@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y nginx \
 
 RUN apt remove -y nodejs nodejs-doc
 
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get install -y nodejs
 
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
