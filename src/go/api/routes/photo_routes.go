@@ -12,4 +12,5 @@ func PhotoRoute(router *gin.Engine) {
   router.GET(   "/api/photo/:photoId", controllers.GetPhotoLatestEvent())
   router.GET(   "/api/events",         controllers.GetAllPhotoEvents())
   router.POST(  "/api/new_photo",      controllers.PostNewPhoto())
+  router.GET(  "/api/new_photo",      controllers.GetNewPhoto())
 }

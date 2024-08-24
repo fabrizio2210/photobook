@@ -32,7 +32,7 @@ Where the user can see all the photos
 
 ## Upload photo
 
-### /api/new_photo POST
+### /api/new_photo POST/GET
 
 
 ## Identification

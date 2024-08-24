@@ -355,6 +355,23 @@ func GetAllPhotoEvents() gin.HandlerFunc {
   }
 }
 
+func GetNewPhoto() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    _, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+    ticket_id := uuid.New()
+
+    c.JSON(
+      http.StatusOK,
+      responses.Response{
+        Status: http.StatusOK,
+        Message: "success",
+        Data: map[string]interface{}{"ticket_id": ticket_id.String()},
+      },
+    )
+  }
+}
+
 func PostNewPhoto() gin.HandlerFunc {
   return func(c *gin.Context) {
     _, cancel := context.WithTimeout(context.Background(), 3*time.Second)
