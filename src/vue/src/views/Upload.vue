@@ -1,7 +1,7 @@
 <template>
   <div class="upload">
     <h2>Upload here your photo</h2>
-    <div class="buttons-upload" >
+    <div class="buttons-upload">
       <UploadImage
         class="btn-primary"
         post-action="/api/new_photo"
@@ -11,6 +11,7 @@
         :size="1024 * 1024 * max_size"
         ref="upload"
         @input-filter="inputFilter"
+        @input-file="inputFile"
         v-model="files"
       >
         <button v-if="!files.length" class="btn">Select an image</button>
@@ -19,11 +20,15 @@
             <img class="image-thumb" v-if="file.thumb" :src="file.thumb" />
           </div>
           <div>{{ formatSize(file.size) }}</div>
-          <div class="transfer-status-error" v-if="status.error">{{ status.error }}</div>
-          <div class="transfer-status-error" v-else-if="file.error">{{ errorMessage(file) }}</div>
+          <div class="transfer-status-error" v-if="status.error">
+            {{ status.error }}
+          </div>
+          <div class="transfer-status-error" v-else-if="file.error">
+            {{ errorMessage(file) }}
+          </div>
           <div class="transfer-status-complete" v-else-if="file.success">
-            done, the picture will be published in a few seconds.
-            Click on the image to change it
+            done, the picture will be published in a few seconds. Click on the
+            image to change it
           </div>
           <div class="transfer-status" v-else-if="file.active">
             {{ file.progress }}% transfered <img src="../assets/loading.gif" />
@@ -50,7 +55,12 @@
       <div class="form-group">
         <label
           >Your name:
-          <input type="text" v-model="author" maxlength="25" class="form-author" />
+          <input
+            type="text"
+            v-model="author"
+            maxlength="25"
+            class="form-author"
+          />
         </label>
       </div>
     </div>
@@ -95,7 +105,7 @@ export default {
   },
   watch: {
     files() {
-     this.resetError();
+      this.resetError();
     }
   },
   computed: {
@@ -130,6 +140,22 @@ export default {
       };
       refs.upload.active = true;
     },
+    inputFile(newFile, oldFile) {
+      // Automatic upload
+      if (
+        Boolean(newFile) !== Boolean(oldFile) ||
+        oldFile.error !== newFile.error
+      ) {
+        if (!this.$refs.upload.active) {
+          var vm = this;
+          vm.files[0].data = {
+            ticket_id: vm.ticket_id,
+            author_id: vm.uid
+          };
+          this.$refs.upload.active = true;
+        }
+      }
+    },
     inputFilter(newFile, oldFile) {
       if (
         newFile &&
@@ -150,18 +176,22 @@ export default {
         }
       }
     },
-    errorMessage(file){
+    errorMessage(file) {
       var msg = file.error;
       if (file.error == "size") {
-        msg = "The image is too big to be upload, try with an image smaller than " + this.max_size + "MB."
+        msg =
+          "The image is too big to be upload, try with an image smaller than " +
+          this.max_size +
+          "MB.";
       }
       if (file.error == "server") {
-        msg = "The server could not handle the request due to an unexpected error."
+        msg =
+          "The server could not handle the request due to an unexpected error.";
       }
-      if (! this.isObjectEmpty(file.response)) {
+      if (!this.isObjectEmpty(file.response)) {
         msg = file.response.message;
         if (!msg) {
-          msg = "Error, it was not possible to upload."
+          msg = "Error, it was not possible to upload.";
         }
       }
       return msg;

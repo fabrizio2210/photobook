@@ -20,7 +20,7 @@ export default {
       sse_client: {},
       closed_connection: false,
       connection_error: false
-      };
+    };
   },
 
   computed: {
@@ -43,11 +43,11 @@ export default {
     handlePhotoEvents(msg) {
       const evento = JSON.parse(msg);
       console.log("SSE:", evento);
-      this.$store.dispatch("photos/mergeEvent", {evento});
+      this.$store.dispatch("photos/mergeEvent", { evento });
     },
     handleUploadError(msg) {
       console.log("Error received from SSE:", msg);
-      this.$store.dispatch("photos/setError", {msg});
+      this.$store.dispatch("photos/setError", { msg });
     },
     handleConnectionError(err) {
       console.log("Failed to parse or lost connection:", err);
@@ -62,10 +62,10 @@ export default {
     this.$store.dispatch("photos/getAll");
     if (typeof this.$route.query.id != "undefined") {
       const id = this.$route.query.id;
-      this.$store.dispatch("authentication/set_uid", {id});
+      this.$store.dispatch("authentication/set_uid", { id });
     }
     if (!this.auth.user || !this.auth.user.uid) {
-       await this.$store.dispatch("authentication/get_uid");
+      await this.$store.dispatch("authentication/get_uid");
     }
     this.$sse
       .create("/api/notifications/" + this.auth.user.uid)
@@ -75,7 +75,9 @@ export default {
       .on("open", this.handleReconnection)
       .connect()
       .catch(this.handleFailedconnection)
-      .then(client=>{ this.sse_client = client});
+      .then(client => {
+        this.sse_client = client;
+      });
   },
   sse: {
     cleanup: true

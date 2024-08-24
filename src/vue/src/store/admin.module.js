@@ -45,7 +45,7 @@ export const admin = {
     },
     setUpload(state, upload) {
       Vue.delete(state, "loading");
-      Vue.set(state,"upload", upload['upload_status']);
+      Vue.set(state, "upload", upload["upload_status"]);
     }
   }
 };

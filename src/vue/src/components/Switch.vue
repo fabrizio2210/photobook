@@ -2,14 +2,16 @@
 export default {
   props: {
     checkboxId: String,
-    checked: Boolean,
+    checked: Boolean
   },
   methods: {
     changeCheck() {
       this.$emit("changeCheck", !this.checked);
-    },
+    }
   },
-  data() {return {};}
+  data() {
+    return {};
+  }
 };
 </script>
 <template>

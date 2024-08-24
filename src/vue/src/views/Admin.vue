@@ -2,11 +2,9 @@
   <div>
     <em v-if="admin.loading">Loading...</em>
     <img v-show="admin.loading" src="../assets/loading.gif" />
-    <span v-if="admin.error" class="text-danger"
-      >ERROR: {{ admin.error }}</span
-    >
-    <div class="admin-grid" >
-      <div class="admin-row" >
+    <span v-if="admin.error" class="text-danger">ERROR: {{ admin.error }}</span>
+    <div class="admin-grid">
+      <div class="admin-row">
         <div class="btn-container">
           <button
             class="admin-col-btn btn-print"
@@ -16,7 +14,7 @@
           </button>
         </div>
       </div>
-      <div class="admin-row" >
+      <div class="admin-row">
         <h3 class="label-btn">Is upload blocked:</h3>
         <Switchbox
           class="switchbox"

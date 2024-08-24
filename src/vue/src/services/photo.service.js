@@ -24,7 +24,9 @@ function getAll() {
   const requestOptions = {
     method: "GET"
   };
-  return fetch(`${config.apiUrl}/api/events`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/api/events`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function getOwn(uid) {
@@ -77,7 +79,7 @@ function handleResponse(response) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject(error);
     }
-    if (typeof data.data !== 'undefined'){
+    if (typeof data.data !== "undefined") {
       return data.data;
     } else {
       return data;

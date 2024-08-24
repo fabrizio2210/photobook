@@ -8,7 +8,6 @@ export const adminService = {
   toggleUpload
 };
 
-
 function newPrint(uid) {
   var url = new URL(`/api/new_print`, config.apiUrl);
   const params = {
@@ -41,8 +40,7 @@ function toggleUpload(uid) {
 
 function getUpload() {
   var url = new URL(`/api/admin/upload`, config.apiUrl);
-  const params = {
-  };
+  const params = {};
   const requestOptions = {
     headers: {
       "Content-Type": "application/json"
@@ -65,7 +63,7 @@ function handleResponse(response) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject(error);
     }
-    if (typeof data.data !== 'undefined'){
+    if (typeof data.data !== "undefined") {
       return data.data;
     } else {
       return data;

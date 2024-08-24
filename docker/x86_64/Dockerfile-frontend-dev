@@ -22,4 +22,4 @@ RUN cd ${APP_FOLDER} && \
 
 # COMMAND
 WORKDIR ${APP_FOLDER}
-CMD npm run serve
+CMD npm run lint && npm run serve

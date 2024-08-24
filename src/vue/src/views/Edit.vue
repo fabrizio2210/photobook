@@ -58,7 +58,10 @@
                 >Name:
                 <input type="text" class="form-author" v-model="photo.author" />
               </label>
-              <button class="btn-delete" @click.prevent="uneditPhoto(photo.photo_id)">
+              <button
+                class="btn-delete"
+                @click.prevent="uneditPhoto(photo.photo_id)"
+              >
                 Cancel
               </button>
               <button

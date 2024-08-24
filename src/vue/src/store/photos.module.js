@@ -14,8 +14,8 @@ function removePhotoFromList(list, photo) {
 }
 
 function mergeEvents(current_list, in_list) {
-  const photos_to_insert = []
-  const photos_to_delete = []
+  const photos_to_insert = [];
+  const photos_to_delete = [];
   for (const photo of in_list.slice()) {
     if (photo.event != "deletion") {
       photos_to_insert.push(photo);
@@ -65,7 +65,7 @@ export const photos = {
     unedit({ commit }, { id }) {
       commit("unedit", id);
     },
-    getAll({ commit } ) {
+    getAll({ commit }) {
       commit("getAllRequest");
       photoService.getAll().then(
         photos => commit("getAllSuccess", photos["events"]),
@@ -95,7 +95,7 @@ export const photos = {
       );
     },
     mergeEvent({ commit }, { evento }) {
-      commit("mergePhotoEvents", [ evento ]);
+      commit("mergePhotoEvents", [evento]);
     },
     resetError({ commit }) {
       commit("resetError");
@@ -202,19 +202,19 @@ export const photos = {
       }
     },
     getAllFailure(state, error) {
-      state.status = { error};
+      state.status = { error };
       state.all = { error };
     },
     getOwnFailure(state, error) {
-      state.status = { error};
+      state.status = { error };
       state.all = { error };
     },
     editFailure(state, error) {
-      state.status = { error};
+      state.status = { error };
       state.all = { error };
     },
     resetError(state) {
-      state.status = { };
+      state.status = {};
     },
     setError(state, error) {
       state.status = { error };
@@ -229,12 +229,12 @@ export const photos = {
         Vue.delete(state.all, "loading");
       } else {
         state.all = { error };
-        state.status = { error};
+        state.status = { error };
       }
     },
     deleteFailure(state, error) {
       state.all = { error };
-      state.status = { error};
+      state.status = { error };
     }
   }
 };

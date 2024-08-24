@@ -37,7 +37,7 @@ export default {
     },
     photos() {
       return this.$store.state.photos.all;
-    },
+    }
   },
   methods: {
     imgError(id) {
