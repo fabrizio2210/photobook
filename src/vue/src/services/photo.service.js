@@ -4,6 +4,7 @@ config.apiUrl = window.location.origin;
 
 export const photoService = {
   get,
+  getTicket,
   getAll,
   getOwn,
   put,
@@ -16,6 +17,16 @@ function get(id) {
   };
 
   return fetch(`${config.apiUrl}/api/photo/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getTicket() {
+  const requestOptions = {
+    method: "GET"
+  };
+
+  return fetch(`${config.apiUrl}/api/new_photo`, requestOptions).then(
     handleResponse
   );
 }

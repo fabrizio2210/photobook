@@ -99,16 +99,26 @@ export default {
       max_size: 20,
       description: "",
       author: "",
-      upload: {},
       files: []
     };
   },
   watch: {
     files() {
       this.resetError();
+    },
+   uploaded(newValue) {
+    if (newValue) {
+      this.$store.dispatch("photos/getTicket");
     }
+   },
   },
   computed: {
+    uploaded(){
+      if (this.files.length>0) {
+        return this.files[0].success
+     }
+     return false;
+    },
     stored_author() {
       if (this.$store.state.authentication.user) {
         if (this.$store.state.authentication.user.name) {
@@ -148,11 +158,13 @@ export default {
       ) {
         if (!this.$refs.upload.active) {
           var vm = this;
-          vm.files[0].data = {
-            ticket_id: vm.ticket_id,
-            author_id: vm.uid
-          };
-          this.$refs.upload.active = true;
+          if (vm.files.length > 0) {
+            vm.files[0].data = {
+              ticket_id: vm.ticket_id,
+              author_id: vm.uid
+            };
+            this.$refs.upload.active = true;
+          }
         }
       }
     },
@@ -217,6 +229,7 @@ export default {
   },
   mounted() {
     this.author = this.stored_author;
+    this.$store.dispatch("photos/getTicket");
   },
   destroyed() {
     const author = this.author;

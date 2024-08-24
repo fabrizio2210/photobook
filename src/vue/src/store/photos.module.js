@@ -50,6 +50,7 @@ export const photos = {
   state: {
     all: { photos_list: [] },
     my: { photos_list: [] },
+    ticket_id: "",
     status: {}
   },
   actions: {
@@ -77,6 +78,12 @@ export const photos = {
       photoService.get(id).then(
         photo => commit("getSuccess", photo["event"]),
         error => commit("getFailure", { error, id })
+      );
+    },
+    getTicket({ commit }) {
+      photoService.getTicket().then(
+        ticket => commit("getTicketSuccess", ticket["ticket_id"]),
+        error => commit("getTicketFailure", error)
       );
     },
     getOwn({ commit }, { uid }) {
@@ -130,6 +137,9 @@ export const photos = {
       state.status = {};
       mergeEvents(state.all.photos_list, [photo]);
       Vue.delete(state.all, "loading");
+    },
+    getTicketSuccess(state, ticket_id) {
+      state.ticket_id = ticket_id;
     },
     mergePhotoEvents(state, events) {
       mergeEvents(state.all.photos_list, events);
@@ -204,6 +214,9 @@ export const photos = {
     getAllFailure(state, error) {
       state.status = { error };
       state.all = { error };
+    },
+    getTicketFailure(state, error) {
+      state.status = { error };
     },
     getOwnFailure(state, error) {
       state.status = { error };
