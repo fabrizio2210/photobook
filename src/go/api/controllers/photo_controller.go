@@ -372,6 +372,62 @@ func GetNewPhoto() gin.HandlerFunc {
   }
 }
 
+func PutNewPhoto() gin.HandlerFunc {
+  return func(c *gin.Context) {
+    _, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    // Validation.
+    if (blockUpload(c)) {
+      log.Printf("Upload denied by environment variable")
+      return
+    }
+    var data models.MetadataInputForm
+    if (! maybeGetForm(c, &data)) {
+      log.Printf("Wrong parsing of the post data.")
+      return
+    }
+
+    truncateAuthor := truncateText(data.Author, 20)
+    truncateDescription := truncateText(data.Description, 200)
+    // Enque the photo for the worker.
+    newPhoto := &photopb.PhotoIn{
+      AuthorId: &data.Author_id,
+      Author: &truncateAuthor,
+      Description: &truncateDescription,
+    }
+    marshalledNewPhoto, err := proto.Marshal(newPhoto)
+    if err != nil {
+        log.Fatalln("Failed to encode address book:", err)
+    }
+    log.Printf("Put metadata in \"waiting_ticket:%s\"", data.Ticket_id)
+    err = rediswrapper.HSet("waiting_ticket:" + data.Ticket_id, "metadata", marshalledNewPhoto)
+    if err != nil {
+      log.Printf("Error with enque the metadata in the waiting list: %v", err.Error())
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusInternalServerError,
+          Message: "Error: not possible to store the request.",
+        },
+      )
+      return
+    }
+    err = maybeEnquePhotoToWorker(data.Ticket_id)
+    if err != nil {
+      log.Printf("Error with enque in the in_photo list: %v", err.Error())
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusInternalServerError,
+          Message: "Error: not possible to store the request.",
+        },
+      )
+      return
+    }
+  }
+}
+
 func PostNewPhoto() gin.HandlerFunc {
   return func(c *gin.Context) {
     _, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -388,12 +444,8 @@ func PostNewPhoto() gin.HandlerFunc {
       return
     }
 
-    event_id := uuid.New()
     photo_id := uuid.New()
-    event_id_str := event_id.String()
     photo_id_str := photo_id.String()
-    order := rediswrapper.GetCounter("photos_count")
-    timestamp := rediswrapper.GetCounter("events_count")
     location := filemanager.LocationForClient(photo_id_str)
 
     // Image processing and writing.
@@ -464,27 +516,95 @@ func PostNewPhoto() gin.HandlerFunc {
       log.Fatal(err)
     }
 
-    truncateAuthor := truncateText(data.Author, 20)
-    truncateDescription := truncateText(data.Description, 200)
-    // Enque the photo for the worker.
+    // Put the photo in the waiting list.
     newPhoto := &photopb.PhotoIn{
       AuthorId: &data.Author_id,
-      Id: &event_id_str,
-      PhotoId: &photo_id_str,
-      Author: &truncateAuthor,
-      Description: &truncateDescription,
-      Timestamp: &timestamp,
-      Order: &order,
       Location: &location,
+      PhotoId: &photo_id_str,
       Photo: imageBuf.Bytes(),
     }
     marshalledNewPhoto, err := proto.Marshal(newPhoto)
     if err != nil {
         log.Fatalln("Failed to encode address book:", err)
     }
-    rediswrapper.Enque("in_photos", marshalledNewPhoto)
-    log.Printf("Enqueued \"%s\" photo in \"in_photos\"", photo_id_str)
-
+    log.Printf("Put \"%s\" photo in \"waiting_ticket:%s\"", photo_id_str, data.Ticket_id)
+    err = rediswrapper.HSet("waiting_ticket:" + data.Ticket_id, "photo", marshalledNewPhoto)
+    if err != nil {
+      log.Printf("Error with enque in the waiting list: %v", err.Error())
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusInternalServerError,
+          Message: "Error: not possible to store the request.",
+        },
+      )
+      return
+    }
+    err = maybeEnquePhotoToWorker(data.Ticket_id)
+    if err != nil {
+      log.Printf("Error with enque photo in the in_photo list: %v", err.Error())
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusInternalServerError,
+          Message: "Error: not possible to enque the photo to the worker.",
+        },
+      )
+      return
+    }
   }
 }
+
+func maybeEnquePhotoToWorker(ticket_id string) error {
+  values, err := rediswrapper.HMGet("waiting_ticket:" + ticket_id, []string{"metadata", "photo"})
+  if err != nil {
+    return err
+  }
+  if len(values) < 2 {
+    log.Printf("%s does not have both metadata and photo to proceed.\n", ticket_id)
+    return nil
+  }
+  metadata_pb := values[0]
+  photo_pb := values[1]
+  photo := &photopb.PhotoIn{}
+  if err := proto.Unmarshal([]byte(photo_pb), photo); err != nil {
+      return err
+  }
+  metadata := &photopb.PhotoIn{}
+  if err := proto.Unmarshal([]byte(metadata_pb), metadata); err != nil {
+      return err
+  }
+
+  event_id := uuid.New()
+  event_id_str := event_id.String()
+  order := rediswrapper.GetCounter("photos_count")
+  timestamp := rediswrapper.GetCounter("events_count")
+
+  // Enque the photo for the worker.
+  newPhoto := &photopb.PhotoIn{
+    AuthorId: metadata.AuthorId,
+    Id: &event_id_str,
+    PhotoId: photo.PhotoId,
+    Author: metadata.Author,
+    Description: metadata.Description,
+    Timestamp: &timestamp,
+    Order: &order,
+    Location: photo.Location,
+    Photo: photo.Photo,
+  }
+  marshalledNewPhoto, err := proto.Marshal(newPhoto)
+  if err != nil {
+      log.Println("Failed to encode address book:", err)
+      return err
+  }
+  rediswrapper.Enque("in_photos", marshalledNewPhoto)
+  err = rediswrapper.DeleteHSet("waiting_ticket:" + ticket_id)
+  if err != nil {
+    return err
+  }
+  log.Printf("Enqueued \"%s\" photo in \"in_photos\"", *photo.PhotoId)
+  return nil
+}
+
+
 

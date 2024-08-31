@@ -7,6 +7,7 @@ export const photoService = {
   getTicket,
   getAll,
   getOwn,
+  putMetadata,
   put,
   del
 };
@@ -47,6 +48,25 @@ function getOwn(uid) {
   };
   const requestOptions = {
     method: "GET"
+  };
+  url.search = new URLSearchParams(params).toString();
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
+function putMetadata(metadata) {
+  var url = new URL(`/api/new_photo`, config.apiUrl);
+  const params = {};
+  const requestOptions = {
+    headers: {
+      "Content-Type": "application/json"
+    },
+    method: "PUT",
+    body: JSON.stringify({
+      author_id: metadata.author_id,
+      author: metadata.author,
+      description: metadata.description,
+      ticket_id: metadata.ticket_id
+    })
   };
   url.search = new URLSearchParams(params).toString();
   return fetch(url, requestOptions).then(handleResponse);

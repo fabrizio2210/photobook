@@ -47,3 +47,29 @@ func WaitFor(queue string) ([]string, error){
   }
   return msg, nil
 }
+
+func HSet(key string, subkey string, value []byte) error{
+  if err := RedisClient.HSet(ctx, key, subkey, value).Err(); err != nil {
+    return err
+  }
+  return nil
+}
+
+func HMGet(key string, subkeys []string) ([]string, error){
+  var vals []string
+  res, err := RedisClient.HMGet(ctx, key, subkeys...).Result();
+  if err != nil {
+    return nil, err
+  }
+  for _, r := range res {
+    if val, ok := r.(string); ok {
+      vals = append(vals, val)
+    }
+  }
+  return vals, nil
+}
+
+func DeleteHSet(key string) error {
+  return RedisClient.Del(ctx, key).Err()
+}
+

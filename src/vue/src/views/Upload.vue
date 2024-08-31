@@ -27,11 +27,16 @@
             {{ errorMessage(file) }}
           </div>
           <div class="transfer-status-complete" v-else-if="file.success">
-            done, the picture will be published in a few seconds. Click on the
-            image to change it
+            <div v-if="show_progress">
+              done, the picture will be published in a few seconds. Click on the
+              image to change it
+            </div>
           </div>
           <div class="transfer-status" v-else-if="file.active">
-            {{ file.progress }}% transfered <img src="../assets/loading.gif" />
+            <div v-if="show_progress">
+              {{ file.progress }}% transfered
+              <img src="../assets/loading.gif" />
+            </div>
           </div>
           <div class="transfer-status" v-else>
             click on the image to change it
@@ -66,15 +71,18 @@
     </div>
     <div>
       <button
-        v-show="(!$refs.upload || !$refs.upload.active) && files.length"
-        @click.prevent="uploadFile($refs)"
+        v-show="
+          (!$refs.upload || !$refs.upload.active || !show_progress) &&
+            files.length
+        "
+        @click.prevent="uploadMetadata()"
         class="btn"
         type="btn"
       >
         Upload
       </button>
       <button
-        v-show="$refs.upload && $refs.upload.active"
+        v-show="$refs.upload && $refs.upload.active && show_progress"
         @click.prevent="$refs.upload.active = false"
         class="btn-stop"
         type="btn"
@@ -97,6 +105,7 @@ export default {
   data() {
     return {
       max_size: 20,
+      show_progress: false,
       description: "",
       author: "",
       files: []
@@ -105,19 +114,14 @@ export default {
   watch: {
     files() {
       this.resetError();
-    },
-   uploaded(newValue) {
-    if (newValue) {
-      this.$store.dispatch("photos/getTicket");
     }
-   },
   },
   computed: {
-    uploaded(){
-      if (this.files.length>0) {
-        return this.files[0].success
-     }
-     return false;
+    uploaded() {
+      if (this.files.length > 0) {
+        return this.files[0].success;
+      }
+      return false;
     },
     stored_author() {
       if (this.$store.state.authentication.user) {
@@ -130,6 +134,14 @@ export default {
     status() {
       return this.$store.state.photos.status;
     },
+    ticket_id() {
+      if (this.$store.state.photos) {
+        if (this.$store.state.photos.ticket_id) {
+          return this.$store.state.photos.ticket_id;
+        }
+      }
+      return "12345";
+    },
     uid() {
       if (this.$store.state.authentication.user) {
         if (this.$store.state.authentication.user.uid) {
@@ -141,14 +153,18 @@ export default {
   },
 
   methods: {
-    uploadFile(refs) {
-      var vm = this;
-      vm.files[0].data = {
-        author: this.$sanitize(vm.author),
-        description: this.$sanitize(vm.description),
-        author_id: vm.uid
-      };
-      refs.upload.active = true;
+    uploadMetadata() {
+      const author_id = this.uid;
+      const author = this.$sanitize(this.author);
+      const description = this.$sanitize(this.description);
+      const ticket_id = this.ticket_id;
+      this.$store.dispatch("photos/putMetadata", {
+        author_id,
+        author,
+        description,
+        ticket_id
+      });
+      this.show_progress = true;
     },
     inputFile(newFile, oldFile) {
       // Automatic upload
@@ -175,6 +191,7 @@ export default {
         newFile.file &&
         (!oldFile || newFile.file !== oldFile.file)
       ) {
+        this.show_progress = false;
         // Create a blob field
         newFile.blob = "";
         let URL = window.URL || window.webkitURL;

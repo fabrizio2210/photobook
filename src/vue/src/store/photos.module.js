@@ -73,6 +73,13 @@ export const photos = {
         error => commit("getAllFailure", error)
       );
     },
+    putMetadata({ commit, dispatch }, metadata) {
+      photoService
+        .putMetadata(metadata)
+        .then(dispatch("getTicket"), error =>
+          commit("putMetadataFailure", error)
+        );
+    },
     get({ commit }, { id }) {
       commit("getRequest");
       photoService.get(id).then(
@@ -216,6 +223,9 @@ export const photos = {
       state.all = { error };
     },
     getTicketFailure(state, error) {
+      state.status = { error };
+    },
+    putMetadataFailure(state, error) {
       state.status = { error };
     },
     getOwnFailure(state, error) {

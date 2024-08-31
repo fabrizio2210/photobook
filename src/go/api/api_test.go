@@ -51,6 +51,21 @@ func intPtr(i int64) *int64 {
   return &i
 }
 
+func TestTicketRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/new_photo", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+  var res responses.Response
+  json.Unmarshal(w.Body.Bytes(), &res)
+  assert.Regexp(t, regexp.MustCompile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"), res.Data["ticket_id"])
+
+}
+
 func TestUidRoute(t *testing.T) {
   gin.SetMode(gin.TestMode)
 	router := setupRouter()
@@ -324,7 +339,7 @@ func TestPutForbiddenEventRoute(t *testing.T) {
   })
 }
 
-func TestPostPhotoRoute(t *testing.T) {
+func TestPostPhotoBeforeRoute(t *testing.T) {
   gin.SetMode(gin.TestMode)
 	router := setupRouter()
   mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
@@ -338,23 +353,18 @@ func TestPostPhotoRoute(t *testing.T) {
   unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
   jpegImageBuf := bytes.NewBuffer([]byte{})
   jpeg.Encode(jpegImageBuf, unflateImage, nil)
+  ticket_id := "123-1234-123"
   want := &photopb.PhotoIn{
-    Author: strPtr("author"),
     AuthorId: strPtr("abc-123-abc"),
-    Description: strPtr("A description"),
-    Id: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
-    Location: strPtr("/static/resized/9566c74d-1003-4c4d-bbbb-0407d1e2c649.jpg"),
-    Order: intPtr(23),
-    PhotoId: strPtr("9566c74d-1003-4c4d-bbbb-0407d1e2c649"),
+    Location: strPtr("/static/resized/52fdfc07-2182-454f-963f-5f0f9a621d72.jpg"),
+    PhotoId: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
     Photo: jpegImageBuf.Bytes(),
-    Timestamp: intPtr(3),
   }
   marshaledWant, _ := proto.Marshal(want)
   go func() {
     defer writer.Close()
     writer.WriteField("author_id", *want.AuthorId)
-    writer.WriteField("description", *want.Description)
-    writer.WriteField("author", *want.Author)
+    writer.WriteField("ticket_id", ticket_id)
     part, err := writer.CreateFormFile("file", "someimg.jpeg")
     if err != nil {
         t.Error(err)
@@ -367,6 +377,86 @@ func TestPostPhotoRoute(t *testing.T) {
   }()
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "photo", marshaledWant).SetVal(1)
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{nil, marshaledWant})
+  
+  w := httptest.NewRecorder()
+  req, _ := http.NewRequest("POST", "/api/new_photo", pr)
+  req.Header.Set("Content-Type", writer.FormDataContentType())
+  mt.Run("POST photo before metadata", func(mt *mtest.T) {
+    db.DB = mt.Client
+    db.StatusCollection = mt.Coll
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(unblocked, killCursors)
+
+    router.ServeHTTP(w, req)
+  })
+
+  assert.Equal(t, 200, w.Code)
+}
+
+func TestPostPhotoAfterRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
+  pr, pw := io.Pipe()
+  writer := multipart.NewWriter(pw)
+  uuid.SetRand(rand.New(rand.NewSource(1)))
+
+  decodedImage := make([]byte, base64.StdEncoding.DecodedLen(len(jpegImage)))
+  base64.StdEncoding.Decode(decodedImage, []byte(jpegImage))
+  unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
+  jpegImageBuf := bytes.NewBuffer([]byte{})
+  jpeg.Encode(jpegImageBuf, unflateImage, nil)
+  ticket_id := "1223-2345-345"
+  metadata := &photopb.PhotoIn{
+    Author: strPtr("author"),
+    AuthorId: strPtr("abc-123-abc"),
+    Description: strPtr("A description"),
+  }
+  marshaledMetadata, _ := proto.Marshal(metadata)
+  photo := &photopb.PhotoIn{
+    AuthorId: strPtr("abc-123-abc"),
+    Location: strPtr("/static/resized/52fdfc07-2182-454f-963f-5f0f9a621d72.jpg"),
+    PhotoId: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+    Photo: jpegImageBuf.Bytes(),
+  }
+  marshaledPhoto, _ := proto.Marshal(photo)
+  want := &photopb.PhotoIn{
+    Author: metadata.Author,
+    AuthorId: metadata.AuthorId,
+    Description: metadata.Description,
+    Id: strPtr("9566c74d-1003-4c4d-bbbb-0407d1e2c649"),
+    Location: photo.Location,
+    Order: intPtr(23),
+    PhotoId: photo.PhotoId,
+    Photo: photo.Photo,
+    Timestamp: intPtr(3),
+  }
+  marshaledWant, _ := proto.Marshal(want)
+  go func() {
+    defer writer.Close()
+    writer.WriteField("author_id", *want.AuthorId)
+    writer.WriteField("ticket_id", ticket_id)
+    part, err := writer.CreateFormFile("file", "someimg.jpeg")
+    if err != nil {
+        t.Error(err)
+    }
+
+    part.Write(decodedImage)
+    if err != nil {
+        t.Error(err)
+    }
+  }()
+  var redisMock redismock.ClientMock
+  rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "photo", marshaledPhoto).SetVal(1)
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{marshaledMetadata, marshaledPhoto})
   redisMock.ExpectIncr("photos_count").SetVal(23)
   redisMock.ExpectIncr("events_count").SetVal(3)
   redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
@@ -375,6 +465,128 @@ func TestPostPhotoRoute(t *testing.T) {
   req, _ := http.NewRequest("POST", "/api/new_photo", pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("POST photo", func(mt *mtest.T) {
+    db.DB = mt.Client
+    db.StatusCollection = mt.Coll
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(unblocked, killCursors)
+
+    router.ServeHTTP(w, req)
+  })
+
+  assert.Equal(t, 200, w.Code)
+}
+
+func TestPutMetadataFirstRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
+  pr, pw := io.Pipe()
+  writer := multipart.NewWriter(pw)
+
+  ticket_id := "1234-1234-1234"
+
+  want := &photopb.PhotoIn{
+    Author: strPtr("author"),
+    AuthorId: strPtr("abc-123-abc"),
+    Description: strPtr("A description"),
+  }
+  marshaledWant, _ := proto.Marshal(want)
+  go func() {
+    defer writer.Close()
+    writer.WriteField("author_id", *want.AuthorId)
+    writer.WriteField("description", *want.Description)
+    writer.WriteField("author", *want.Author)
+    writer.WriteField("ticket_id", ticket_id)
+  }()
+  var redisMock redismock.ClientMock
+  rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHSet("waiting_ticket:1234-1234-1234", "metadata", marshaledWant).SetVal(1)
+  redisMock.ExpectHMGet("waiting_ticket:1234-1234-1234", "metadata", "photo").SetVal([]interface{}{marshaledWant, nil})
+  
+  w := httptest.NewRecorder()
+  req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
+  req.Header.Set("Content-Type", writer.FormDataContentType())
+  mt.Run("PUT metadata photo first", func(mt *mtest.T) {
+    db.DB = mt.Client
+    db.StatusCollection = mt.Coll
+    unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
+      {Key: "id", Value: "block_upload"},
+      {Key: "value", Value: false},
+    })
+    killCursors := mtest.CreateCursorResponse(0, "photobook.events", mtest.NextBatch)
+    mt.AddMockResponses(unblocked, killCursors)
+
+    router.ServeHTTP(w, req)
+  })
+
+  assert.Equal(t, 200, w.Code)
+}
+
+func TestPutMetadataAfterRoute(t *testing.T) {
+  gin.SetMode(gin.TestMode)
+	router := setupRouter()
+  mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+  defer mt.Close()
+  pr, pw := io.Pipe()
+  writer := multipart.NewWriter(pw)
+  uuid.SetRand(rand.New(rand.NewSource(1)))
+
+  decodedImage := make([]byte, base64.StdEncoding.DecodedLen(len(jpegImage)))
+  base64.StdEncoding.Decode(decodedImage, []byte(jpegImage))
+  unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
+  jpegImageBuf := bytes.NewBuffer([]byte{})
+  jpeg.Encode(jpegImageBuf, unflateImage, nil)
+  ticket_id := "1234-1234-1234"
+  photo := &photopb.PhotoIn{
+    AuthorId: strPtr("abc-123-abc"),
+    Id: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+    Location: strPtr("/static/resized/9566c74d-1003-4c4d-bbbb-0407d1e2c649.jpg"),
+    PhotoId: strPtr("9566c74d-1003-4c4d-bbbb-0407d1e2c649"),
+    Photo: jpegImageBuf.Bytes(),
+  }
+  marshaledPhoto, _ := proto.Marshal(photo)
+  metadata := &photopb.PhotoIn{
+    Author: strPtr("author"),
+    AuthorId: strPtr("abc-123-abc"),
+    Description: strPtr("A description"),
+  }
+  marshaledMetadata, _ := proto.Marshal(metadata)
+  want := &photopb.PhotoIn{
+    Author: metadata.Author,
+    AuthorId: metadata.AuthorId,
+    Description: metadata.Description,
+    Id: photo.Id,
+    Location: photo.Location,
+    Order: intPtr(23),
+    PhotoId: photo.PhotoId,
+    Photo: photo.Photo,
+    Timestamp: intPtr(3),
+  }
+  marshaledWant, _ := proto.Marshal(want)
+  go func() {
+    defer writer.Close()
+    writer.WriteField("author_id", *want.AuthorId)
+    writer.WriteField("description", *want.Description)
+    writer.WriteField("author", *want.Author)
+    writer.WriteField("ticket_id", ticket_id)
+  }()
+  var redisMock redismock.ClientMock
+  rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "metadata", marshaledMetadata).SetVal(1)
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{marshaledMetadata, marshaledPhoto})
+  redisMock.ExpectIncr("photos_count").SetVal(23)
+  redisMock.ExpectIncr("events_count").SetVal(3)
+  redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
+  
+  w := httptest.NewRecorder()
+  req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
+  req.Header.Set("Content-Type", writer.FormDataContentType())
+  mt.Run("PUT photo", func(mt *mtest.T) {
     db.DB = mt.Client
     db.StatusCollection = mt.Coll
     unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
