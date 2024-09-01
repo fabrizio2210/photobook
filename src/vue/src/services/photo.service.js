@@ -66,7 +66,7 @@ function putMetadata(metadata) {
     body: JSON.stringify({
       author_id: metadata.author_id,
       author: metadata.author,
-      description: metadata.description,
+      description: metadata.description
     })
   };
   url.search = new URLSearchParams(params).toString();
