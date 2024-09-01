@@ -444,6 +444,11 @@ func PostNewPhoto() gin.HandlerFunc {
       return
     }
 
+    err := rediswrapper.HDel("waiting_ticket:" + data.Ticket_id, "photo")
+    if err != nil {
+      log.Printf("Error in deleting waiting_ticket for photoi: %v", err)
+    }
+
     photo_id := uuid.New()
     photo_id_str := photo_id.String()
     location := filemanager.LocationForClient(photo_id_str)
@@ -598,7 +603,7 @@ func maybeEnquePhotoToWorker(ticket_id string) error {
       return err
   }
   rediswrapper.Enque("in_photos", marshalledNewPhoto)
-  err = rediswrapper.DeleteHSet("waiting_ticket:" + ticket_id)
+  err = rediswrapper.Del("waiting_ticket:" + ticket_id)
   if err != nil {
     return err
   }

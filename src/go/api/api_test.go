@@ -377,8 +377,9 @@ func TestPostPhotoBeforeRoute(t *testing.T) {
   }()
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHDel("waiting_ticket:" + ticket_id, "photo").SetVal(1)
   redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "photo", marshaledWant).SetVal(1)
-  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{nil, marshaledWant})
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{nil, string(marshaledWant)})
   
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("POST", "/api/new_photo", pr)
@@ -455,16 +456,18 @@ func TestPostPhotoAfterRoute(t *testing.T) {
   }()
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
+  redisMock.ExpectHDel("waiting_ticket:" + ticket_id, "photo").SetVal(1)
   redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "photo", marshaledPhoto).SetVal(1)
-  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{marshaledMetadata, marshaledPhoto})
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{string(marshaledMetadata), string(marshaledPhoto)})
   redisMock.ExpectIncr("photos_count").SetVal(23)
   redisMock.ExpectIncr("events_count").SetVal(3)
   redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
+  redisMock.ExpectDel("waiting_ticket:" + ticket_id).SetVal(1)
   
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("POST", "/api/new_photo", pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
-  mt.Run("POST photo", func(mt *mtest.T) {
+  mt.Run("POST photo after metadata", func(mt *mtest.T) {
     db.DB = mt.Client
     db.StatusCollection = mt.Coll
     unblocked := mtest.CreateCursorResponse(1, "photobook.status", mtest.FirstBatch, bson.D{
@@ -477,6 +480,7 @@ func TestPostPhotoAfterRoute(t *testing.T) {
     router.ServeHTTP(w, req)
   })
 
+  assert.NoError(t, redisMock.ExpectationsWereMet())
   assert.Equal(t, 200, w.Code)
 }
 
@@ -506,7 +510,7 @@ func TestPutMetadataFirstRoute(t *testing.T) {
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
   redisMock.ExpectHSet("waiting_ticket:1234-1234-1234", "metadata", marshaledWant).SetVal(1)
-  redisMock.ExpectHMGet("waiting_ticket:1234-1234-1234", "metadata", "photo").SetVal([]interface{}{marshaledWant, nil})
+  redisMock.ExpectHMGet("waiting_ticket:1234-1234-1234", "metadata", "photo").SetVal([]interface{}{string(marshaledWant), nil})
   
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
@@ -524,6 +528,7 @@ func TestPutMetadataFirstRoute(t *testing.T) {
     router.ServeHTTP(w, req)
   })
 
+  assert.NoError(t, redisMock.ExpectationsWereMet())
   assert.Equal(t, 200, w.Code)
 }
 
@@ -578,10 +583,11 @@ func TestPutMetadataAfterRoute(t *testing.T) {
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
   redisMock.ExpectHSet("waiting_ticket:" + ticket_id, "metadata", marshaledMetadata).SetVal(1)
-  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{marshaledMetadata, marshaledPhoto})
+  redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{string(marshaledMetadata), string(marshaledPhoto)})
   redisMock.ExpectIncr("photos_count").SetVal(23)
   redisMock.ExpectIncr("events_count").SetVal(3)
   redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
+  redisMock.ExpectDel("waiting_ticket:" + ticket_id).SetVal(1)
   
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
@@ -599,6 +605,7 @@ func TestPutMetadataAfterRoute(t *testing.T) {
     router.ServeHTTP(w, req)
   })
 
+  assert.NoError(t, redisMock.ExpectationsWereMet())
   assert.Equal(t, 200, w.Code)
 }
 
@@ -616,23 +623,12 @@ func TestPostPhotoBlockedRoute(t *testing.T) {
   unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
   jpegImageBuf := bytes.NewBuffer([]byte{})
   jpeg.Encode(jpegImageBuf, unflateImage, nil)
-  want := &photopb.PhotoIn{
-    Author: strPtr("author"),
-    AuthorId: strPtr("abc-123-abc"),
-    Description: strPtr("A description"),
-    Id: strPtr("52fdfc07-2182-454f-963f-5f0f9a621d72"),
-    Location: strPtr("/static/resized/9566c74d-1003-4c4d-bbbb-0407d1e2c649.jpg"),
-    Order: intPtr(23),
-    PhotoId: strPtr("9566c74d-1003-4c4d-bbbb-0407d1e2c649"),
-    Photo: jpegImageBuf.Bytes(),
-    Timestamp: intPtr(3),
-  }
-  marshaledWant, _ := proto.Marshal(want)
+  
   go func() {
     defer writer.Close()
-    writer.WriteField("author_id", *want.AuthorId)
-    writer.WriteField("description", *want.Description)
-    writer.WriteField("author", *want.Author)
+    writer.WriteField("author_id", "abc-123-abc")
+    writer.WriteField("description", "A description")
+    writer.WriteField("author", "author")
     part, err := writer.CreateFormFile("file", "someimg.jpeg")
     if err != nil {
         t.Error(err)
@@ -643,11 +639,6 @@ func TestPostPhotoBlockedRoute(t *testing.T) {
         t.Error(err)
     }
   }()
-  var redisMock redismock.ClientMock
-  rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
-  redisMock.ExpectIncr("photos_count").SetVal(23)
-  redisMock.ExpectIncr("events_count").SetVal(3)
-  redisMock.ExpectLPush("in_photos", marshaledWant).SetVal(0)
   
   w := httptest.NewRecorder()
   req, _ := http.NewRequest("POST", "/api/new_photo", pr)

@@ -69,7 +69,11 @@ func HMGet(key string, subkeys []string) ([]string, error){
   return vals, nil
 }
 
-func DeleteHSet(key string) error {
+func HDel(key string, fields ...string) error {
+  return RedisClient.HDel(ctx, key, fields...).Err()
+}
+
+func Del(key string) error {
   return RedisClient.Del(ctx, key).Err()
 }
 
