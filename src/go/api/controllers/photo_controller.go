@@ -382,6 +382,19 @@ func PutNewPhoto() gin.HandlerFunc {
       log.Printf("Upload denied by environment variable")
       return
     }
+
+    if c.Query("ticket_id") == "" {
+      log.Printf("No ticket_id specified\n")
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusBadRequest,
+          Message: "Error: no ticket_id found in the request query.",
+        },
+      )
+      return
+    }
+
     var data models.MetadataInputForm
     if (! maybeGetForm(c, &data)) {
       log.Printf("Wrong parsing of the post data.")
@@ -400,8 +413,8 @@ func PutNewPhoto() gin.HandlerFunc {
     if err != nil {
         log.Fatalln("Failed to encode address book:", err)
     }
-    log.Printf("Put metadata in \"waiting_ticket:%s\"", data.Ticket_id)
-    err = rediswrapper.HSet("waiting_ticket:" + data.Ticket_id, "metadata", marshalledNewPhoto)
+    log.Printf("Put metadata in \"waiting_ticket:%s\"", c.Query("ticket_id"))
+    err = rediswrapper.HSet("waiting_ticket:" + c.Query("ticket_id"), "metadata", marshalledNewPhoto)
     if err != nil {
       log.Printf("Error with enque the metadata in the waiting list: %v", err.Error())
       c.JSON(
@@ -413,7 +426,7 @@ func PutNewPhoto() gin.HandlerFunc {
       )
       return
     }
-    err = maybeEnquePhotoToWorker(data.Ticket_id)
+    err = maybeEnquePhotoToWorker(c.Query("ticket_id"))
     if err != nil {
       log.Printf("Error with enque in the in_photo list: %v", err.Error())
       c.JSON(
@@ -438,16 +451,32 @@ func PostNewPhoto() gin.HandlerFunc {
       log.Printf("Upload denied by environment variable")
       return
     }
+
+    if c.Query("ticket_id") == "" {
+      log.Printf("No ticket_id specified\n")
+      c.JSON(
+        http.StatusBadRequest,
+        responses.Response{
+          Status: http.StatusBadRequest,
+          Message: "Error: no ticket_id found in the request query.",
+        },
+      )
+      return
+    }
+
+    log.Printf("Deleting (if present), photo from \"waiting_ticket:%s\"", c.Query("ticket_id"))
+    err := rediswrapper.HDel("waiting_ticket:" + c.Query("ticket_id"), "photo")
+    if err != nil {
+      log.Printf("Error in deleting waiting_ticket for photoi: %v", err)
+    }
+     
+
     var data models.PhotoInputForm
     if (! maybeGetForm(c, &data)) {
       log.Printf("Wrong parsing of the post data.")
       return
     }
 
-    err := rediswrapper.HDel("waiting_ticket:" + data.Ticket_id, "photo")
-    if err != nil {
-      log.Printf("Error in deleting waiting_ticket for photoi: %v", err)
-    }
 
     photo_id := uuid.New()
     photo_id_str := photo_id.String()
@@ -532,8 +561,8 @@ func PostNewPhoto() gin.HandlerFunc {
     if err != nil {
         log.Fatalln("Failed to encode address book:", err)
     }
-    log.Printf("Put \"%s\" photo in \"waiting_ticket:%s\"", photo_id_str, data.Ticket_id)
-    err = rediswrapper.HSet("waiting_ticket:" + data.Ticket_id, "photo", marshalledNewPhoto)
+    log.Printf("Put \"%s\" photo in \"waiting_ticket:%s\"", photo_id_str, c.Query("ticket_id"))
+    err = rediswrapper.HSet("waiting_ticket:" + c.Query("ticket_id"), "photo", marshalledNewPhoto)
     if err != nil {
       log.Printf("Error with enque in the waiting list: %v", err.Error())
       c.JSON(
@@ -545,7 +574,7 @@ func PostNewPhoto() gin.HandlerFunc {
       )
       return
     }
-    err = maybeEnquePhotoToWorker(data.Ticket_id)
+    err = maybeEnquePhotoToWorker(c.Query("ticket_id"))
     if err != nil {
       log.Printf("Error with enque photo in the in_photo list: %v", err.Error())
       c.JSON(
@@ -610,6 +639,5 @@ func maybeEnquePhotoToWorker(ticket_id string) error {
   log.Printf("Enqueued \"%s\" photo in \"in_photos\"", *photo.PhotoId)
   return nil
 }
-
 
 

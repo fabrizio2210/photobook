@@ -19,14 +19,12 @@ type PhotoInputJson struct {
 
 type PhotoInputForm struct {
   Author_id   string `form:"author_id" validate:"required"`
-  Ticket_id   string `form:"ticket_id" validate:"required"`
 }
 
 type MetadataInputForm struct {
   Author      string `form:"author"`
   Author_id   string `form:"author_id" validate:"required"`
   Description string `form:"description"`
-  Ticket_id   string `form:"ticket_id" validate:"required"`
 }
 
 func (e *PhotoEvent) StripPrivateInfo() {

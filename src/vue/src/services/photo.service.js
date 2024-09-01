@@ -55,7 +55,9 @@ function getOwn(uid) {
 
 function putMetadata(metadata) {
   var url = new URL(`/api/new_photo`, config.apiUrl);
-  const params = {};
+  const params = {
+    ticket_id: metadata.ticket_id
+  };
   const requestOptions = {
     headers: {
       "Content-Type": "application/json"
@@ -65,7 +67,6 @@ function putMetadata(metadata) {
       author_id: metadata.author_id,
       author: metadata.author,
       description: metadata.description,
-      ticket_id: metadata.ticket_id
     })
   };
   url.search = new URLSearchParams(params).toString();

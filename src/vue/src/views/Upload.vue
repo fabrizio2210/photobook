@@ -4,7 +4,7 @@
     <div class="buttons-upload">
       <UploadImage
         class="btn-primary"
-        post-action="/api/new_photo"
+        :post-action="'/api/new_photo?ticket_id=' + ticket_id"
         extensions="gif,jpg,jpeg,png,webp"
         accept="image/png,image/gif,image/jpeg,image/webp"
         :multiple="false"
@@ -176,7 +176,6 @@ export default {
           var vm = this;
           if (vm.files.length > 0) {
             vm.files[0].data = {
-              ticket_id: vm.ticket_id,
               author_id: vm.uid
             };
             this.$refs.upload.active = true;

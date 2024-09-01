@@ -364,7 +364,6 @@ func TestPostPhotoBeforeRoute(t *testing.T) {
   go func() {
     defer writer.Close()
     writer.WriteField("author_id", *want.AuthorId)
-    writer.WriteField("ticket_id", ticket_id)
     part, err := writer.CreateFormFile("file", "someimg.jpeg")
     if err != nil {
         t.Error(err)
@@ -382,7 +381,7 @@ func TestPostPhotoBeforeRoute(t *testing.T) {
   redisMock.ExpectHMGet("waiting_ticket:" + ticket_id, "metadata", "photo").SetVal([]interface{}{nil, string(marshaledWant)})
   
   w := httptest.NewRecorder()
-  req, _ := http.NewRequest("POST", "/api/new_photo", pr)
+  req, _ := http.NewRequest("POST", "/api/new_photo?ticket_id=" + ticket_id, pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("POST photo before metadata", func(mt *mtest.T) {
     db.DB = mt.Client
@@ -443,7 +442,6 @@ func TestPostPhotoAfterRoute(t *testing.T) {
   go func() {
     defer writer.Close()
     writer.WriteField("author_id", *want.AuthorId)
-    writer.WriteField("ticket_id", ticket_id)
     part, err := writer.CreateFormFile("file", "someimg.jpeg")
     if err != nil {
         t.Error(err)
@@ -465,7 +463,7 @@ func TestPostPhotoAfterRoute(t *testing.T) {
   redisMock.ExpectDel("waiting_ticket:" + ticket_id).SetVal(1)
   
   w := httptest.NewRecorder()
-  req, _ := http.NewRequest("POST", "/api/new_photo", pr)
+  req, _ := http.NewRequest("POST", "/api/new_photo?ticket_id=" + ticket_id, pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("POST photo after metadata", func(mt *mtest.T) {
     db.DB = mt.Client
@@ -505,7 +503,6 @@ func TestPutMetadataFirstRoute(t *testing.T) {
     writer.WriteField("author_id", *want.AuthorId)
     writer.WriteField("description", *want.Description)
     writer.WriteField("author", *want.Author)
-    writer.WriteField("ticket_id", ticket_id)
   }()
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
@@ -513,7 +510,7 @@ func TestPutMetadataFirstRoute(t *testing.T) {
   redisMock.ExpectHMGet("waiting_ticket:1234-1234-1234", "metadata", "photo").SetVal([]interface{}{string(marshaledWant), nil})
   
   w := httptest.NewRecorder()
-  req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
+  req, _ := http.NewRequest("PUT", "/api/new_photo?ticket_id=" + ticket_id, pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("PUT metadata photo first", func(mt *mtest.T) {
     db.DB = mt.Client
@@ -578,7 +575,6 @@ func TestPutMetadataAfterRoute(t *testing.T) {
     writer.WriteField("author_id", *want.AuthorId)
     writer.WriteField("description", *want.Description)
     writer.WriteField("author", *want.Author)
-    writer.WriteField("ticket_id", ticket_id)
   }()
   var redisMock redismock.ClientMock
   rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
@@ -590,7 +586,7 @@ func TestPutMetadataAfterRoute(t *testing.T) {
   redisMock.ExpectDel("waiting_ticket:" + ticket_id).SetVal(1)
   
   w := httptest.NewRecorder()
-  req, _ := http.NewRequest("PUT", "/api/new_photo", pr)
+  req, _ := http.NewRequest("PUT", "/api/new_photo?ticket_id=" + ticket_id, pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("PUT photo", func(mt *mtest.T) {
     db.DB = mt.Client
@@ -618,6 +614,7 @@ func TestPostPhotoBlockedRoute(t *testing.T) {
   writer := multipart.NewWriter(pw)
   uuid.SetRand(rand.New(rand.NewSource(1)))
 
+  ticket_id := "123-456-22"
   decodedImage := make([]byte, base64.StdEncoding.DecodedLen(len(jpegImage)))
   base64.StdEncoding.Decode(decodedImage, []byte(jpegImage))
   unflateImage, _, _ := image.Decode(bytes.NewReader(decodedImage))
@@ -641,7 +638,7 @@ func TestPostPhotoBlockedRoute(t *testing.T) {
   }()
   
   w := httptest.NewRecorder()
-  req, _ := http.NewRequest("POST", "/api/new_photo", pr)
+  req, _ := http.NewRequest("POST", "/api/new_photo?ticket_id=" + ticket_id, pr)
   req.Header.Set("Content-Type", writer.FormDataContentType())
   mt.Run("POST photo", func(mt *mtest.T) {
     db.DB = mt.Client
