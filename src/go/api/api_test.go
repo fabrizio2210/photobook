@@ -14,6 +14,7 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"testing"
+	"time"
 
 	"Api/controllers"
 	"Api/responses"
@@ -378,6 +379,7 @@ func TestPostPhotoBeforeRoute(t *testing.T) {
 	rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "expecting", []byte(want.GetPhotoId())).SetVal(1)
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "photo", marshaledWant).SetVal(1)
+	redisMock.ExpectExpire("waiting_ticket:"+ticket_id, time.Duration(1)*time.Hour).SetVal(true)
 	redisMock.ExpectHMGet("waiting_ticket:"+ticket_id, "metadata", "photo", "expecting").SetVal([]interface{}{nil, string(marshaledWant), *want.PhotoId})
 
 	w := httptest.NewRecorder()
@@ -457,6 +459,7 @@ func TestPostPhotoAfterRoute(t *testing.T) {
 	rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "expecting", []byte(photo.GetPhotoId())).SetVal(1)
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "photo", marshaledPhoto).SetVal(1)
+	redisMock.ExpectExpire("waiting_ticket:"+ticket_id, time.Duration(1)*time.Hour).SetVal(true)
 	redisMock.ExpectHMGet("waiting_ticket:"+ticket_id, "metadata", "photo", "expecting").SetVal([]interface{}{string(marshaledMetadata), string(marshaledPhoto), *photo.PhotoId})
 	redisMock.ExpectIncr("photos_count").SetVal(23)
 	redisMock.ExpectIncr("events_count").SetVal(3)
@@ -529,6 +532,7 @@ func TestPostPhotoAfterNotExpectedRoute(t *testing.T) {
 	rediswrapper.RedisClient, redisMock = redismock.NewClientMock()
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "expecting", []byte(photo.GetPhotoId())).SetVal(1)
 	redisMock.ExpectHSet("waiting_ticket:"+ticket_id, "photo", marshaledPhoto).SetVal(1)
+	redisMock.ExpectExpire("waiting_ticket:"+ticket_id, time.Duration(1)*time.Hour).SetVal(true)
 	redisMock.ExpectHMGet("waiting_ticket:"+ticket_id, "metadata", "photo", "expecting").SetVal([]interface{}{string(marshaledMetadata), string(marshaledPhoto), "wrong-photo-ID"})
 
 	w := httptest.NewRecorder()

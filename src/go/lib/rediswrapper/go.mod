@@ -1,1 +1,1 @@
-package reddiswrapper
+module reddiswrapper

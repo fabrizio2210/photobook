@@ -471,7 +471,7 @@ func PostNewPhoto() gin.HandlerFunc {
 		log.Printf("Reserving photo_id %s in \"waiting_ticket:%s\"", photo_id_str, c.Query("ticket_id"))
 		err := rediswrapper.HSet("waiting_ticket:"+c.Query("ticket_id"), "expecting", []byte(photo_id_str))
 		if err != nil {
-			log.Printf("Error in deleting waiting_ticket for photoi: %v", err)
+			log.Printf("Error in deleting waiting_ticket for photo: %v", err)
 		}
 
 		var data models.PhotoInputForm
@@ -557,7 +557,7 @@ func PostNewPhoto() gin.HandlerFunc {
 		}
 		marshalledNewPhoto, err := proto.Marshal(newPhoto)
 		if err != nil {
-			log.Fatalln("Failed to encode address book:", err)
+			log.Fatalln("Failed to encode the photo proto:", err)
 		}
 		log.Printf("Put \"%s\" photo in \"waiting_ticket:%s\"", photo_id_str, c.Query("ticket_id"))
 		err = rediswrapper.HSet("waiting_ticket:"+c.Query("ticket_id"), "photo", marshalledNewPhoto)
@@ -568,6 +568,18 @@ func PostNewPhoto() gin.HandlerFunc {
 				responses.Response{
 					Status:  http.StatusInternalServerError,
 					Message: "Error: not possible to store the request.",
+				},
+			)
+			return
+		}
+		err = rediswrapper.Expire("waiting_ticket:"+c.Query("ticket_id"), time.Duration(1)*time.Hour)
+		if err != nil {
+			log.Printf("Error while setting expiration for \"%s\": %v", c.Query("ticket_id"), err)
+			c.JSON(
+				http.StatusBadRequest,
+				responses.Response{
+					Status:  http.StatusInternalServerError,
+					Message: "Error: not possible to enque the photo to the worker.",
 				},
 			)
 			return
