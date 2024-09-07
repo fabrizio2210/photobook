@@ -10,6 +10,7 @@ import (
 	_ "image/png"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -443,6 +444,61 @@ func PutNewPhoto() gin.HandlerFunc {
 	}
 }
 
+func ticketID(c *gin.Context) string {
+	ticket_id := c.Query("ticket_id")
+	if ticket_id == "" {
+		c.JSON(
+			http.StatusBadRequest,
+			responses.Response{
+				Status:  http.StatusBadRequest,
+				Message: "Error: no ticket_id found in the request query.",
+			},
+		)
+	}
+	return ticket_id
+}
+
+func fileFromForm(c *gin.Context) (*multipart.FileHeader, error) {
+	// Image processing and writing.
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			responses.Response{
+				Status:  http.StatusBadRequest,
+				Message: "Error: no file found in the request.",
+			},
+		)
+		return nil, fmt.Errorf("no multipart form found: %v", err.Error())
+	}
+
+	files := form.File["file"]
+	if len(files) != 1 {
+		c.JSON(
+			http.StatusBadRequest,
+			responses.Response{
+				Status:  http.StatusBadRequest,
+				Message: "Error: too many file found in the request.",
+			},
+		)
+		return nil, fmt.Errorf("number of files is different from 1: %d", len(files))
+	}
+	file := files[0]
+	if !allowedExtensions(file.Filename) {
+		c.JSON(
+			http.StatusBadRequest,
+			responses.Response{
+				Status:  http.StatusBadRequest,
+				Message: fmt.Sprintf("Error: the \"%s\" file has a bad extension. It should one of the following \"%s\"", file.Filename, allowed_extensions),
+				Data:    map[string]interface{}{"event": "bad extension"},
+			},
+		)
+		return nil, fmt.Errorf("bad extension: %s", file.Filename)
+	}
+	return file, nil
+}
+
 func PostNewPhoto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, cancel := context.WithTimeout(context.Background(), 300*time.Second)
@@ -454,16 +510,9 @@ func PostNewPhoto() gin.HandlerFunc {
 			return
 		}
 
-		ticket_id := c.Query("ticket_id")
+		ticket_id := ticketID(c)
 		if ticket_id == "" {
-			log.Printf("No ticket_id specified\n")
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusBadRequest,
-					Message: "Error: no ticket_id found in the request query.",
-				},
-			)
+			log.Println("No ticket_id specified")
 			return
 		}
 
@@ -475,7 +524,7 @@ func PostNewPhoto() gin.HandlerFunc {
 		log.Printf("Reserving photo_id %s in \"%s\"", photo_id_str, waiting_ticket)
 		err := rediswrapper.HSet(waiting_ticket, "expecting", []byte(photo_id_str))
 		if err != nil {
-			log.Printf("Error in deleting waiting_ticket for photo: %v", err)
+			log.Printf("Error in deleting \"%s\" for photo, but carrying on: %v", waiting_ticket, err)
 		}
 
 		var data models.PhotoInputForm
@@ -484,46 +533,11 @@ func PostNewPhoto() gin.HandlerFunc {
 			return
 		}
 
-		// Image processing and writing.
-		form, err := c.MultipartForm()
+		file, err := fileFromForm(c)
 		if err != nil {
-			log.Printf("No multipart form found: %v", err.Error())
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusBadRequest,
-					Message: "Error: no file found in the request.",
-				},
-			)
+			log.Println("Error with the extaction of the file: %v", err)
 			return
 		}
-
-		files := form.File["file"]
-		if len(files) != 1 {
-			log.Printf("Number of files is different from 1: %d", len(files))
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusBadRequest,
-					Message: "Error: too many file found in the request.",
-				},
-			)
-			return
-		}
-		file := files[0]
-		if !allowedExtensions(file.Filename) {
-			log.Printf("Bad extension: %s", file.Filename)
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusBadRequest,
-					Message: fmt.Sprintf("Error: the \"%s\" file has a bad extension. It should one of the following \"%s\"", file.Filename, allowed_extensions),
-					Data:    map[string]interface{}{"event": "bad extension"},
-				},
-			)
-			return
-		}
-
 		fl, _ := file.Open()
 		flRead, _ := io.ReadAll(fl)
 		log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
