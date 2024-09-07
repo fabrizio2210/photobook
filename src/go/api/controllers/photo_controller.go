@@ -384,16 +384,9 @@ func PutNewPhoto() gin.HandlerFunc {
 			return
 		}
 
-		ticket_id := c.Query("ticket_id")
+		ticket_id := ticketID(c)
 		if ticket_id == "" {
-			log.Printf("No ticket_id specified\n")
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusBadRequest,
-					Message: "Error: no ticket_id found in the request query.",
-				},
-			)
+			log.Println("No ticket_id specified")
 			return
 		}
 
@@ -429,16 +422,9 @@ func PutNewPhoto() gin.HandlerFunc {
 			)
 			return
 		}
-		err = maybeEnquePhotoToWorker(waiting_ticket)
+		err = maybeEnquePhotoToWorker(c, waiting_ticket)
 		if err != nil {
-			log.Printf("Error with enque in the in_photo list: %v", err.Error())
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusInternalServerError,
-					Message: "Error: not possible to store the request.",
-				},
-			)
+			log.Printf("Error with enque in the in_photo list: %v", err)
 			return
 		}
 	}
@@ -499,6 +485,96 @@ func fileFromForm(c *gin.Context) (*multipart.FileHeader, error) {
 	return file, nil
 }
 
+func saveOnDiskAnsReturn(c *gin.Context, file *multipart.FileHeader, photo_id_str string) (*bytes.Buffer, error) {
+	fl, _ := file.Open()
+	flRead, _ := io.ReadAll(fl)
+	log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
+	err := os.WriteFile(
+		filemanager.PathToFullQualityFolder(photo_id_str),
+		flRead, os.ModePerm)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to save the image.",
+			},
+		)
+		return nil, err
+	}
+
+	originalImage, _, err := image.Decode(bytes.NewReader(flRead))
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to decode the image.",
+			},
+		)
+		return nil, fmt.Errorf("error in decoding the image: %v", err.Error())
+	}
+	o, _ := orientation.Read(bytes.NewReader(flRead))
+	originalImage = orientation.Normalize(originalImage, o)
+	originalImageBuf := bytes.NewBuffer([]byte{})
+	jpeg.Encode(originalImageBuf, originalImage, nil)
+	resizedImage := resize.Thumbnail(900, 600, originalImage, resize.Lanczos3)
+	imageBuf := bytes.NewBuffer([]byte{})
+	jpeg.Encode(imageBuf, resizedImage, nil)
+	log.Printf("Writing in: %v", filemanager.PathToUploadFolder(photo_id_str))
+	err = os.WriteFile(
+		filemanager.PathToUploadFolder(photo_id_str), imageBuf.Bytes(), os.ModePerm)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to save the image.",
+			},
+		)
+		return nil, err
+	}
+	return imageBuf, nil
+}
+
+func putPhotoInWaitingList(c *gin.Context, newPhoto *photopb.PhotoIn, waiting_ticket string) error {
+	marshalledNewPhoto, err := proto.Marshal(newPhoto)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to marshall the request.",
+			},
+		)
+		return fmt.Errorf("failed to encode the photo proto:", err)
+	}
+	log.Printf("Put \"%s\" photo in \"%s\"", newPhoto.GetPhotoId(), waiting_ticket)
+	err = rediswrapper.HSet(waiting_ticket, "photo", marshalledNewPhoto)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to store the request.",
+			},
+		)
+		return fmt.Errorf("error with enque of the photo in the waiting list \"%s\": %v", waiting_ticket, err)
+	}
+	err = rediswrapper.Expire(waiting_ticket, time.Duration(1)*time.Hour)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to store the photo.",
+			},
+		)
+		return fmt.Errorf("error while setting expiration for \"%s\": %v", waiting_ticket, err)
+	}
+	return nil
+}
+
 func PostNewPhoto() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, cancel := context.WithTimeout(context.Background(), 300*time.Second)
@@ -538,34 +614,12 @@ func PostNewPhoto() gin.HandlerFunc {
 			log.Println("Error with the extaction of the file: %v", err)
 			return
 		}
-		fl, _ := file.Open()
-		flRead, _ := io.ReadAll(fl)
-		log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
-		err = os.WriteFile(
-			filemanager.PathToFullQualityFolder(photo_id_str),
-			flRead, os.ModePerm)
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		originalImage, _, err := image.Decode(bytes.NewReader(flRead))
+		imageBuf, err := saveOnDiskAnsReturn(c, file, photo_id_str)
 		if err != nil {
-			log.Printf("Error in decoding the image: %v", err.Error())
+			log.Printf("Error in saving the photo \"%s\": %v:", photo_id_str, err)
+			return
 		}
-		o, _ := orientation.Read(bytes.NewReader(flRead))
-		originalImage = orientation.Normalize(originalImage, o)
-		originalImageBuf := bytes.NewBuffer([]byte{})
-		jpeg.Encode(originalImageBuf, originalImage, nil)
-		resizedImage := resize.Thumbnail(900, 600, originalImage, resize.Lanczos3)
-		imageBuf := bytes.NewBuffer([]byte{})
-		jpeg.Encode(imageBuf, resizedImage, nil)
-		log.Printf("Writing in: %v", filemanager.PathToUploadFolder(photo_id_str))
-		err = os.WriteFile(
-			filemanager.PathToUploadFolder(photo_id_str), imageBuf.Bytes(), os.ModePerm)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		// Put the photo in the waiting list.
 		newPhoto := &photopb.PhotoIn{
 			AuthorId: &data.Author_id,
@@ -573,53 +627,29 @@ func PostNewPhoto() gin.HandlerFunc {
 			PhotoId:  &photo_id_str,
 			Photo:    imageBuf.Bytes(),
 		}
-		marshalledNewPhoto, err := proto.Marshal(newPhoto)
+		err = putPhotoInWaitingList(c, newPhoto, waiting_ticket)
 		if err != nil {
-			log.Fatalln("Failed to encode the photo proto:", err)
-		}
-		log.Printf("Put \"%s\" photo in \"%s\"", photo_id_str, waiting_ticket)
-		err = rediswrapper.HSet(waiting_ticket, "photo", marshalledNewPhoto)
-		if err != nil {
-			log.Printf("Error with enque of the photo in the waiting list \"%s\": %v", waiting_ticket, err.Error())
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusInternalServerError,
-					Message: "Error: not possible to store the request.",
-				},
-			)
+			log.Printf("Error in putting the photo in waiting list: %v", err)
 			return
 		}
-		err = rediswrapper.Expire(waiting_ticket, time.Duration(1)*time.Hour)
+		err = maybeEnquePhotoToWorker(c, waiting_ticket)
 		if err != nil {
-			log.Printf("Error while setting expiration for \"%s\": %v", waiting_ticket, err)
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusInternalServerError,
-					Message: "Error: not possible to enque the photo to the worker.",
-				},
-			)
-			return
-		}
-		err = maybeEnquePhotoToWorker(waiting_ticket)
-		if err != nil {
-			log.Printf("Error with enque photo in the in_photo list: %v", err.Error())
-			c.JSON(
-				http.StatusBadRequest,
-				responses.Response{
-					Status:  http.StatusInternalServerError,
-					Message: "Error: not possible to enque the photo to the worker.",
-				},
-			)
+			log.Printf("Error with enque photo in the in_photo list: %v", err)
 			return
 		}
 	}
 }
 
-func maybeEnquePhotoToWorker(waiting_ticket string) error {
+func maybeEnquePhotoToWorker(c *gin.Context, waiting_ticket string) error {
 	values, err := rediswrapper.HMGet(waiting_ticket, []string{"metadata", "photo", "expecting"})
 	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to read the waiting list.",
+			},
+		)
 		return err
 	}
 	if len(values) < 3 {
@@ -631,10 +661,24 @@ func maybeEnquePhotoToWorker(waiting_ticket string) error {
 	expecting_photo_id := values[2]
 	photo := &photopb.PhotoIn{}
 	if err := proto.Unmarshal([]byte(photo_pb), photo); err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to read the photo from the waiting list.",
+			},
+		)
 		return err
 	}
 	metadata := &photopb.PhotoIn{}
 	if err := proto.Unmarshal([]byte(metadata_pb), metadata); err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to read the metadata from the waiting list.",
+			},
+		)
 		return err
 	}
 
@@ -662,13 +706,26 @@ func maybeEnquePhotoToWorker(waiting_ticket string) error {
 	}
 	marshalledNewPhoto, err := proto.Marshal(newPhoto)
 	if err != nil {
-		log.Println("Failed to encode photo proto:", err)
-		return err
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to marshall the photo to the worker.",
+			},
+		)
+		return fmt.Errorf("failed to encode photo proto:", err)
 	}
 	rediswrapper.Enque("in_photos", marshalledNewPhoto)
 	err = rediswrapper.Del(waiting_ticket)
 	if err != nil {
-		return err
+		c.JSON(
+			http.StatusInternalServerError,
+			responses.Response{
+				Status:  http.StatusInternalServerError,
+				Message: "Error: not possible to enque the photo to the worker.",
+			},
+		)
+		return fmt.Errorf("redis gave an error: %v", err)
 	}
 	log.Printf("Enqueued \"%s\" photo in \"in_photos\"", *photo.PhotoId)
 	return nil
