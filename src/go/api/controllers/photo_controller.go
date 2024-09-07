@@ -8,7 +8,7 @@ import (
 	"image"
 	"image/jpeg"
 	_ "image/png"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -157,7 +157,7 @@ func isEditor(ctx context.Context, id string) bool {
 		if res.Body != nil {
 			defer res.Body.Close()
 		}
-		body, _ := ioutil.ReadAll(res.Body)
+		body, _ := io.ReadAll(res.Body)
 
 		var guest_api_response GuestApiResponse
 		if err := json.Unmarshal(body, &guest_api_response); err != nil {
@@ -383,7 +383,8 @@ func PutNewPhoto() gin.HandlerFunc {
 			return
 		}
 
-		if c.Query("ticket_id") == "" {
+		ticket_id := c.Query("ticket_id")
+		if ticket_id == "" {
 			log.Printf("No ticket_id specified\n")
 			c.JSON(
 				http.StatusBadRequest,
@@ -395,6 +396,7 @@ func PutNewPhoto() gin.HandlerFunc {
 			return
 		}
 
+		waiting_ticket := "waiting_ticket:" + ticket_id
 		var data models.MetadataInputForm
 		if !maybeGetForm(c, &data) {
 			log.Printf("Wrong parsing of the post data.")
@@ -413,10 +415,10 @@ func PutNewPhoto() gin.HandlerFunc {
 		if err != nil {
 			log.Fatalln("Failed to encode address book:", err)
 		}
-		log.Printf("Put metadata in \"waiting_ticket:%s\"", c.Query("ticket_id"))
-		err = rediswrapper.HSet("waiting_ticket:"+c.Query("ticket_id"), "metadata", marshalledNewPhoto)
+		log.Printf("Put metadata in \"%s\"", waiting_ticket)
+		err = rediswrapper.HSet(waiting_ticket, "metadata", marshalledNewPhoto)
 		if err != nil {
-			log.Printf("Error with enque the metadata in the waiting list: %v", err.Error())
+			log.Printf("Error with enque the metadata of \"%s\" in the waiting list: %v", waiting_ticket, err.Error())
 			c.JSON(
 				http.StatusBadRequest,
 				responses.Response{
@@ -426,7 +428,7 @@ func PutNewPhoto() gin.HandlerFunc {
 			)
 			return
 		}
-		err = maybeEnquePhotoToWorker(c.Query("ticket_id"))
+		err = maybeEnquePhotoToWorker(waiting_ticket)
 		if err != nil {
 			log.Printf("Error with enque in the in_photo list: %v", err.Error())
 			c.JSON(
@@ -443,7 +445,7 @@ func PutNewPhoto() gin.HandlerFunc {
 
 func PostNewPhoto() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		_, cancel := context.WithTimeout(context.Background(), 300*time.Second)
 		defer cancel()
 
 		// Validation.
@@ -452,7 +454,8 @@ func PostNewPhoto() gin.HandlerFunc {
 			return
 		}
 
-		if c.Query("ticket_id") == "" {
+		ticket_id := c.Query("ticket_id")
+		if ticket_id == "" {
 			log.Printf("No ticket_id specified\n")
 			c.JSON(
 				http.StatusBadRequest,
@@ -464,12 +467,13 @@ func PostNewPhoto() gin.HandlerFunc {
 			return
 		}
 
+		waiting_ticket := "waiting_ticket:" + ticket_id
 		photo_id := uuid.New()
 		photo_id_str := photo_id.String()
 		location := filemanager.LocationForClient(photo_id_str)
 
-		log.Printf("Reserving photo_id %s in \"waiting_ticket:%s\"", photo_id_str, c.Query("ticket_id"))
-		err := rediswrapper.HSet("waiting_ticket:"+c.Query("ticket_id"), "expecting", []byte(photo_id_str))
+		log.Printf("Reserving photo_id %s in \"%s\"", photo_id_str, waiting_ticket)
+		err := rediswrapper.HSet(waiting_ticket, "expecting", []byte(photo_id_str))
 		if err != nil {
 			log.Printf("Error in deleting waiting_ticket for photo: %v", err)
 		}
@@ -521,9 +525,9 @@ func PostNewPhoto() gin.HandlerFunc {
 		}
 
 		fl, _ := file.Open()
-		flRead, _ := ioutil.ReadAll(fl)
+		flRead, _ := io.ReadAll(fl)
 		log.Printf("Writing in: %v", filemanager.PathToFullQualityFolder(photo_id_str))
-		err = ioutil.WriteFile(
+		err = os.WriteFile(
 			filemanager.PathToFullQualityFolder(photo_id_str),
 			flRead, os.ModePerm)
 		if err != nil {
@@ -542,7 +546,7 @@ func PostNewPhoto() gin.HandlerFunc {
 		imageBuf := bytes.NewBuffer([]byte{})
 		jpeg.Encode(imageBuf, resizedImage, nil)
 		log.Printf("Writing in: %v", filemanager.PathToUploadFolder(photo_id_str))
-		err = ioutil.WriteFile(
+		err = os.WriteFile(
 			filemanager.PathToUploadFolder(photo_id_str), imageBuf.Bytes(), os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -559,10 +563,10 @@ func PostNewPhoto() gin.HandlerFunc {
 		if err != nil {
 			log.Fatalln("Failed to encode the photo proto:", err)
 		}
-		log.Printf("Put \"%s\" photo in \"waiting_ticket:%s\"", photo_id_str, c.Query("ticket_id"))
-		err = rediswrapper.HSet("waiting_ticket:"+c.Query("ticket_id"), "photo", marshalledNewPhoto)
+		log.Printf("Put \"%s\" photo in \"%s\"", photo_id_str, waiting_ticket)
+		err = rediswrapper.HSet(waiting_ticket, "photo", marshalledNewPhoto)
 		if err != nil {
-			log.Printf("Error with enque in the waiting list: %v", err.Error())
+			log.Printf("Error with enque of the photo in the waiting list \"%s\": %v", waiting_ticket, err.Error())
 			c.JSON(
 				http.StatusBadRequest,
 				responses.Response{
@@ -572,9 +576,9 @@ func PostNewPhoto() gin.HandlerFunc {
 			)
 			return
 		}
-		err = rediswrapper.Expire("waiting_ticket:"+c.Query("ticket_id"), time.Duration(1)*time.Hour)
+		err = rediswrapper.Expire(waiting_ticket, time.Duration(1)*time.Hour)
 		if err != nil {
-			log.Printf("Error while setting expiration for \"%s\": %v", c.Query("ticket_id"), err)
+			log.Printf("Error while setting expiration for \"%s\": %v", waiting_ticket, err)
 			c.JSON(
 				http.StatusBadRequest,
 				responses.Response{
@@ -584,7 +588,7 @@ func PostNewPhoto() gin.HandlerFunc {
 			)
 			return
 		}
-		err = maybeEnquePhotoToWorker(c.Query("ticket_id"))
+		err = maybeEnquePhotoToWorker(waiting_ticket)
 		if err != nil {
 			log.Printf("Error with enque photo in the in_photo list: %v", err.Error())
 			c.JSON(
@@ -599,13 +603,13 @@ func PostNewPhoto() gin.HandlerFunc {
 	}
 }
 
-func maybeEnquePhotoToWorker(ticket_id string) error {
-	values, err := rediswrapper.HMGet("waiting_ticket:"+ticket_id, []string{"metadata", "photo", "expecting"})
+func maybeEnquePhotoToWorker(waiting_ticket string) error {
+	values, err := rediswrapper.HMGet(waiting_ticket, []string{"metadata", "photo", "expecting"})
 	if err != nil {
 		return err
 	}
 	if len(values) < 3 {
-		log.Printf("%s does not have both metadata and photo to proceed.\n", ticket_id)
+		log.Printf("%s does not have both metadata and photo to proceed.\n", waiting_ticket)
 		return nil
 	}
 	metadata_pb := values[0]
@@ -644,11 +648,11 @@ func maybeEnquePhotoToWorker(ticket_id string) error {
 	}
 	marshalledNewPhoto, err := proto.Marshal(newPhoto)
 	if err != nil {
-		log.Println("Failed to encode address book:", err)
+		log.Println("Failed to encode photo proto:", err)
 		return err
 	}
 	rediswrapper.Enque("in_photos", marshalledNewPhoto)
-	err = rediswrapper.Del("waiting_ticket:" + ticket_id)
+	err = rediswrapper.Del(waiting_ticket)
 	if err != nil {
 		return err
 	}
